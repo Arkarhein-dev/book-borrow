@@ -80,7 +80,6 @@ public class BookService {
 			book.setAvailable(false);
 		}
 		bookRepository.save(book);
-		
 	}
 	
 	@Transactional
