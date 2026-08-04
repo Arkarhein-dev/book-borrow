@@ -64,11 +64,10 @@
                             <td th:text="${book.title}">Sample Title</td>
                             <td th:text="${book.author}">Sample Author</td>
                             <td th:text="${book.stock}">10</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
+                            <td class="text-center ">
                                     <!-- Edit Link -->
                                     <a th:href="@{/admin/books/edit/{id}(id=${book.id})}" 
-                                       class="btn btn-outline-warning">
+                                       class="btn btn-warning btn-sm mx-2">
                                         Edit
                                     </a>
                                     
@@ -76,11 +75,10 @@
                                           method="post" 
                                           class="d-inline"
                                           onclick="return confirm('Are you sure you want to delete this book?');">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <button type="submit" class="btn btn-danger btn-sm">
                                             Delete
                                         </button>
                                     </form>
-                                </div>
                             </td>
                         </tr>
                     </tbody>

@@ -17,20 +17,30 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-	private final CustomAuthenticationSuccessHandler successHandler;
+    private final CustomAuthenticationSuccessHandler successHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.formLogin(form -> form.successHandler(successHandler));
-        http.authorizeHttpRequests(
-            auth-> auth
-		        .requestMatchers("/books","/books/**").permitAll()
-		        .requestMatchers("/logout").permitAll()
-		        .requestMatchers("/admin/**").hasRole("ADMIN")
-		        .requestMatchers("/user/**").hasRole("USER")
-		        .anyRequest().authenticated()
-        );
-        
+        http
+            .authorizeHttpRequests(
+        auth-> auth
+                .requestMatchers("/", "/user/home", "/show-register", "/register", "/login", "/css/**", "/js/**", "/books/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                            .loginPage("/login")
+                            .loginProcessingUrl("/login")
+                            .successHandler(successHandler)
+                            .permitAll()
+                    )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/user/home?logout")
+                        .permitAll()
+                );
+
         return http.build();
     }
 
@@ -39,20 +49,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) { 
-        UserDetails admin = User.builder()
-                .username("Admin")
-                .password(passwordEncoder.encode("Admin123")) 
-                .roles("ADMIN", "USER")
-                .build();
-
-        UserDetails user = User.builder()
-                .username("User")
-                .password(passwordEncoder.encode("User123"))  
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin, user);
-    }
 }

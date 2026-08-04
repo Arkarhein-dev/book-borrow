@@ -34,7 +34,7 @@ public class Book {
 	private int stock;
 	
 	@Column(nullable = false)
-	private boolean isAvailable;
+	private boolean available;
 	
 	@OneToMany(mappedBy = "book")
 	private List<BorrowRecord> borrowRecords;

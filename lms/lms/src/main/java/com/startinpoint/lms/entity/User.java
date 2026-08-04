@@ -2,12 +2,7 @@ package com.startinpoint.lms.entity;
 
 import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,15 +21,18 @@ public class User {
 	@Column(nullable = false, length = 150)
 	private String username;
 	
-	@Column(nullable = false, length = 50)
+	@Column(nullable = false, length = 150)
 	private String password;
-	
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private String role;
+	private UserRole role;
 	
 	@Column(nullable = false)
 	private boolean isActive;
 	
 	@OneToMany(mappedBy = "user")
 	private List<BorrowRecord> borrowRecords;
+
+
 }

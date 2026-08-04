@@ -7,7 +7,7 @@ import com.startinpoint.lms.entity.BorrowStatus;
 
 public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long> {
 
-    List<BorrowRecord> findByUserIdAndStatus(Long userId, BorrowStatus status);
+    List<BorrowRecord> findByUserUsernameAndStatus(String username, BorrowStatus status);
 
     List<BorrowRecord> findByUserUsername(String username);
 
