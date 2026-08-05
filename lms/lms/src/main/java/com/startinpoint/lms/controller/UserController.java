@@ -5,14 +5,12 @@ import java.util.List;
 import com.startinpoint.lms.entity.BorrowRecord;
 import com.startinpoint.lms.entity.BorrowStatus;
 import com.startinpoint.lms.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.startinpoint.lms.entity.Book;
 import com.startinpoint.lms.service.BookService;
@@ -28,10 +26,23 @@ public class UserController {
 	private final BookService bookService;
 
 	@GetMapping("/home")
-	public String userHome(Model model) {
-		List<Book> books = bookService.getAllBooks();
-		model.addAttribute("books",books);
-		return "book/user/home"; 
+	public String userHome(
+			@RequestParam(value = "page",defaultValue = "1")int page,
+			@RequestParam(value = "size",defaultValue = "6")int size,
+			@RequestParam(value = "sortField",defaultValue = "title")String sortField,
+			@RequestParam(value = "sortDir",defaultValue = "asc")String sortDir,
+			Model model
+	){
+		Page<Book> bookPage = bookService.getAllBooks(page,size,sortField,sortDir);
+		model.addAttribute("books",bookPage.getContent());
+		model.addAttribute("currentPage",page);
+		model.addAttribute("pageSize",size);
+		model.addAttribute("sortField",sortField);
+		model.addAttribute("sortDir",sortDir);
+		model.addAttribute("totalPages",bookPage.getTotalPages());
+		model.addAttribute("totalItems",bookPage.getTotalElements());
+		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
+		return "book/user/home";
 	}
 	
 	@GetMapping("/my-books")
@@ -69,10 +80,4 @@ public class UserController {
 		}
 		return "redirect:/user/my-books";
 	}
-	
-	
-	
-	
-	
-	
 }

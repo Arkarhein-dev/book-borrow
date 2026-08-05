@@ -12,18 +12,35 @@
         <a class="navbar-brand" th:href="@{/user/home}">Library Management System</a>
 
         <div class="d-flex align-items-center gap-2">
-                <span class="text-light me-2" sec:authorize="isAuthenticated()">
+
+            <!--Login user-->
+            <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
+                <span class="text-light me-2">
                     Hello, <strong sec:authentication="name">User</strong>
                 </span>
 
-            <a th:href="@{/user/my-books}" class="btn btn-primary">My Books</a>
-            <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm">Admin Dashboard</a>
+
+                <a th:href="@{/user/my-books}" class="btn btn-primary btn-sm">My Books</a>
+                <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
+            </div>
+
+            <!-- Anonymous User -->
+            <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
+                <a th:href="@{/login}" class="btn btn-outline-light btn-sm">Login</a>
+                <a th:href="@{/show-register}" class="btn btn-primary btn-sm">Register</a>
+            </div>
+
         </div>
     </div>
 </nav>
 
 <div class="container mt-5">
-    <h3 class="mb-4">My Borrowed Books</h3>
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <h3>My Borrowed Books</h3>
+        <a th:href="@{/user/home}" class="btn btn-secondary">&larr; Back to Home</a>
+    </div>
+
 
     <!-- Flash messages -->
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">

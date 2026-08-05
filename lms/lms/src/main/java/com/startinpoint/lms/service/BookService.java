@@ -4,6 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -26,11 +30,23 @@ public class BookService {
 	private final BookRepository bookRepository;
 	private final UserRepository userRepository;
 	private final BorrowRecordRepository borrowRecordRepository;
-	
-	public List<Book> getAllBooks(){
-		return bookRepository.findAll();
+
+
+
+//	public List<Book> getAllBooks(){
+//		return bookRepository.findAll();
+//	}
+
+	public Page<Book> getAllBooks(int pageNo, int pageSize, String sortField, String sortDir){
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+				? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+
+		Pageable pageable= PageRequest.of(pageNo-1,pageSize,sort);
+		return bookRepository.findAll(pageable);
 	}
-	
+
+
 	public Book getBookById(long id) {
 		return bookRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("Book Not Found."));
 	}

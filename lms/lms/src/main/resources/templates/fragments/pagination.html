@@ -12,7 +12,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-secondary mb-4">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/home}">Library Management System</a>
+        <a class="navbar-brand" th:href="@{/user/home}">Library Management System</a>
 
         <div class="d-flex align-items-center gap-2">
 
@@ -65,19 +65,19 @@
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
                         <i class="bi bi-fonts me-1"></i> Title
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
                         <i class="bi bi-person me-1"></i> Author
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
                         <i class="bi bi-boxes me-1"></i> Stock
                     </a>
                 </li>
@@ -94,21 +94,21 @@
                     <th>ID</th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
                             Title
                             <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
                             Author
                             <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
                             Stock
                             <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
                         </a>
@@ -157,8 +157,8 @@
         </div>
     </div>
 
-    <!-- Reusable Fragment Call for Pagination -->
-    <div th:replace="~{fragments/pagination :: paginationControls('/home')}"></div>
+    <!-- Reusable Fragment Call targeting '/user/home' route -->
+    <div th:replace="~{fragments/pagination :: paginationControls('/user/home')}"></div>
 
 </div>
 

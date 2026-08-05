@@ -2,14 +2,7 @@ package com.startinpoint.lms.entity;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,10 +18,12 @@ public class BorrowRecord {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne(optional = false)
+	@ManyToOne(fetch = FetchType.LAZY,optional = false)
+	@JoinColumn(name = "user_id",nullable = false)
 	private User user;
-	
-	@ManyToOne(optional = false)
+
+	@ManyToOne(fetch = FetchType.LAZY,optional = false)
+	@JoinColumn(name = "book_id",nullable = false)
 	private Book book;
 	
 	@Column(nullable = false)
