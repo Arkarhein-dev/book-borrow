@@ -7,90 +7,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Library Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body class="bg-light">	
+<body class="bg-light">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary mb-4">
-        <div class="container">
-            <a class="navbar-brand" th:href="@{/admin/dashboard}">Library Management System - Admin Dashboard</a>
-            
-            <div class="d-flex align-items-center gap-2">
-                <!-- Greeting -->
-                <span class="text-light me-2" sec:authorize="isAuthenticated()">
-                    Hello, <strong sec:authentication="name">Admin</strong>
-                </span>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/admin/dashboard}">Library Management System - Admin Dashboard</a>
 
-                <!-- Logout Link -->
-                <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Greeting -->
+            <span class="text-light me-2" sec:authorize="isAuthenticated()">
+                Hello, <strong sec:authentication="name">Admin</strong>
+            </span>
+
+            <!-- Logout Link -->
+            <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Container -->
+<div class="container my-4">
+
+    <!-- Header & Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">Book Inventory</h2>
+            <p class="text-muted mb-0">Total Books: <strong th:text="${totalItems}">0</strong></p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <!-- Sort Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
+                    Sort By: <span th:text="${sortField}">title</span> (<span th:text="${#strings.toUpperCase(sortDir)}">ASC</span>)
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                            <i class="bi bi-fonts me-1"></i> Title
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                            <i class="bi bi-person me-1"></i> Author
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                            <i class="bi bi-boxes me-1"></i> Stock
+                        </a>
+                    </li>
+                </ul>
             </div>
+
+            <!-- Action Buttons -->
+            <a th:href="@{/admin/user-lists}" class="btn btn-primary btn-sm">Manage Users</a>
+            <a th:href="@{/admin/books/new}" class="btn btn-success btn-sm">+ Add New Book</a>
         </div>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="container my-4">
-        
-        <!-- Header & Action Bar -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Book List</h2>
-            <a th:href="@{/admin/user-lists}" class="btn btn-primary">Manage Users</a>
-            <a th:href="@{/admin/books/new}" class="btn btn-success">+ Add New Book</a>
-        </div>
-        
-        <!-- Book Table Card -->
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <table class="table table-hover table-striped mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Author</th>
-                            <th>Stock</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    
-                    <tbody>
-                        <!-- Empty State -->
-                        <tr th:if="${#lists.isEmpty(books)}">
-                            <td colspan="5" class="text-center py-4 text-muted">
-                                No books available in the inventory.
-                            </td>
-                        </tr>
-
-                        <!-- Iterated Book Rows -->
-                        <tr th:each="book : ${books}">
-                            <td th:text="${book.id}">1</td>
-                            <td th:text="${book.title}">Sample Title</td>
-                            <td th:text="${book.author}">Sample Author</td>
-                            <td th:text="${book.stock}">10</td>
-                            <td class="text-center ">
-
-                                <a th:href="@{/admin/{bookId}/borrowers(bookId=${book.id})}" class="btn btn-primary btn-sm mx-2" >Who Borrowed</a>
-
-                                <!-- Edit Link -->
-                                <a th:href="@{/admin/books/edit/{id}(id=${book.id})}"
-                                   class="btn btn-warning btn-sm mx-2">
-                                    Edit
-                                </a>
-
-                                <form th:action="@{/admin/books/delete/{id}(id=${book.id})}"
-                                      method="post"
-                                      class="d-inline"
-                                      onclick="return confirm('Are you sure you want to delete this book?');">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
 
+    <!-- Book Table Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>
+                        <a class="text-white text-decoration-none"
+                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                            Title
+                            <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a class="text-white text-decoration-none"
+                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                            Author
+                            <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
+                        </a>
+                    </th>
+                    <th>
+                        <a class="text-white text-decoration-none"
+                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                            Stock
+                            <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
+                        </a>
+                    </th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <!-- Empty State -->
+                <tr th:if="${#lists.isEmpty(books)}">
+                    <td colspan="4" class="text-center py-4 text-muted">
+                        No books available in the inventory.
+                    </td>
+                </tr>
+
+                <!-- Iterated Book Rows -->
+                <tr th:each="book : ${books}">
+                    <td th:text="${book.title}">Sample Title</td>
+                    <td th:text="${book.author}">Sample Author</td>
+                    <td th:text="${book.stock}">10</td>
+                    <td class="text-center">
+
+<!--                        <a th:href="@{/admin/{bookId}/borrowers(bookId=${book.id})}" class="btn btn-primary btn-sm mx-1">Who Borrowed</a>-->
+
+                        <a th:href="@{/admin/books/edit/{id}(id=${book.id})}" class="btn btn-warning btn-sm mx-1">Edit</a>
+
+                        <form th:action="@{/admin/books/delete/{id}(id=${book.id})}"
+                              method="post"
+                              class="d-inline"
+                              onclick="return confirm('Are you sure you want to delete this book?');">
+                            <button type="submit" class="btn btn-danger btn-sm mx-1">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div th:replace="~{/fragments/pagination :: paginationControls(
+            baseUrl='/admin/dashboard',
+            currentPage=${currentPage},
+            totalPages=${totalPages},
+            pageSize=${pageSize},
+            sortField=${sortField},
+            sortDir=${sortDir}
+         )}">
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

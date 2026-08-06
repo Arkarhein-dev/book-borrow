@@ -1,10 +1,11 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Borrow Books</title>
+    <title>My Borrowed Books</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-secondary mb-4">
@@ -12,15 +13,12 @@
         <a class="navbar-brand" th:href="@{/user/home}">Library Management System</a>
 
         <div class="d-flex align-items-center gap-2">
-
-            <!--Login user-->
+            <!-- Authenticated User -->
             <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
                 <span class="text-light me-2">
                     Hello, <strong sec:authentication="name">User</strong>
                 </span>
-
                 <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm">Admin Dashboard</a>
-
                 <a th:href="@{/user/my-books}" class="btn btn-primary btn-sm">My Books</a>
                 <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
             </div>
@@ -30,17 +28,31 @@
                 <a th:href="@{/login}" class="btn btn-outline-light btn-sm">Login</a>
                 <a th:href="@{/show-register}" class="btn btn-primary btn-sm">Register</a>
             </div>
-
         </div>
     </div>
 </nav>
 
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center my-3">
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>My Borrowed Books</h3>
-        <a th:href="@{/user/home}" class="btn btn-secondary">&larr; Back to Home</a>
+        <a th:href="@{/user/home}" class="btn btn-secondary btn-sm">&larr; Back to Home</a>
     </div>
 
+    <!-- Status Filter Buttons -->
+    <div class="mb-3 d-flex gap-2">
+        <a th:href="@{/user/my-books(size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+           class="btn btn-sm"
+           th:classappend="${selectedStatus == null} ? 'btn-primary' : 'btn-outline-primary'">
+            All Records
+        </a>
+        <a th:each="st : ${allStatuses}"
+           th:href="@{/user/my-books(status=${st}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+           class="btn btn-sm"
+           th:classappend="${selectedStatus == st} ? 'btn-primary' : 'btn-outline-primary'"
+           th:text="${st}">
+            STATUS
+        </a>
+    </div>
 
     <!-- Flash messages -->
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
@@ -52,11 +64,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                 <tr>
+                    <th>#</th>
                     <th>Book Title</th>
                     <th>Author</th>
                     <th>Borrow Date</th>
@@ -66,34 +79,46 @@
                 </tr>
                 </thead>
                 <tbody>
-                <!-- Shown when the user has no active borrowed books -->
-                <tr th:if="${#lists.isEmpty(records)}">
-                    <td colspan="6" class="text-center py-4 text-muted">You have no borrowed books.</td>
+                <tr th:if="${#lists.isEmpty(borrowRecords)}">
+                    <td colspan="7" class="text-center py-4 text-muted">You have no borrowed books.</td>
                 </tr>
 
-                <!-- Iterates through active borrow records -->
-                <tr th:each="record : ${records}">
-                    <td th:text="${record.book.title}">Book Title</td>
+                <tr th:each="record, iter : ${borrowRecords}">
+                    <td th:text="${(currentPage - 1) * pageSize + iter.count}">1</td>
+                    <td class="fw-semibold" th:text="${record.book.title}">Book Title</td>
                     <td th:text="${record.book.author}">Author</td>
-                    <td th:text="${record.borrowDate}">Borrow Date</td>
-                    <td th:text="${record.dueDate}">Due Date</td>
+                    <td th:text="${#temporals.format(record.borrowDate, 'dd MMM yyyy')}">01 Jan 2026</td>
+                    <td th:text="${#temporals.format(record.dueDate, 'dd MMM yyyy')}">15 Jan 2026</td>
                     <td>
-                        <span th:text="${record.status}" class="badge bg-warning text-dark">BORROWED</span>
+                        <span th:if="${record.status.name() == 'BORROWED'}" class="badge bg-warning text-dark">BORROWED</span>
+                        <span th:if="${record.status.name() == 'RETURNED'}" class="badge bg-success">RETURNED</span>
+                        <span th:if="${record.status.name() == 'OVERDUE'}" class="badge bg-danger">OVERDUE</span>
                     </td>
                     <td>
-                        <!-- Fixed path: Added /user/ prefix -->
-                        <form th:action="@{/user/return-book/{recordId}(recordId=${record.id})}" method="post">
+                        <form th:if="${record.status.name() == 'BORROWED' || record.status.name() == 'OVERDUE'}"
+                              th:action="@{/user/return-book/{recordId}(recordId=${record.id})}" method="post">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Return Book</button>
                         </form>
+                        <span th:unless="${record.status.name() == 'BORROWED' || record.status.name() == 'OVERDUE'}" class="text-muted">-</span>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Pagination Component Fragment -->
+    <div th:replace="~{fragments/pagination :: paginationControls(
+            baseUrl='/user/my-books',
+            currentPage=${currentPage},
+            totalPages=${totalPages},
+            pageSize=${pageSize},
+            sortField=${sortField},
+            sortDir=${sortDir}
+         )}">
+    </div>
 </div>
 
-<!-- Bootstrap 5 Bundle JS for alert dismissals and interactivity -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Borrowed Books - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -14,20 +15,23 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>Borrow History for <span class="text-primary" th:text="${user.username}">Username</span></h2>
-            <p class="text-muted mb-0">User ID: <span th:text="${user.id}">1</span></p>
+            <p class="text-muted mb-0">
+                User ID: <span th:text="${user.id}">1</span> |
+                Total Records: <strong th:text="${totalItems}">0</strong>
+            </p>
         </div>
         <a th:href="@{/admin/user-lists}" class="btn btn-outline-secondary btn-sm">&larr; Back to Users List</a>
     </div>
 
-    <!-- Filter Buttons/Tabs -->
+    <!-- Filter Buttons/Tabs (Preserves Page Size, Sort, and resets to Page 1) -->
     <div class="mb-3 d-flex gap-2">
-        <a th:href="@{/admin/users/{userId}/borrowed(userId=${user.id})}"
+        <a th:href="@{/admin/users/{userId}/borrowed(userId=${user.id}, page=1, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
            class="btn btn-sm"
            th:classappend="${selectedStatus == null} ? 'btn-primary' : 'btn-outline-primary'">
             All Statuses
         </a>
         <a th:each="st : ${allStatuses}"
-           th:href="@{/admin/users/{userId}/borrowed(userId=${user.id}, status=${st})}"
+           th:href="@{/admin/users/{userId}/borrowed(userId=${user.id}, status=${st}, page=1, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
            class="btn btn-sm"
            th:classappend="${selectedStatus == st} ? 'btn-primary' : 'btn-outline-primary'"
            th:text="${st}">
@@ -36,15 +40,31 @@
     </div>
 
     <!-- Borrow Records Table -->
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-0">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                 <tr>
-                    <th>#</th>
+                    <th style="width: 70px;">#</th>
                     <th>Book Title</th>
-                    <th>Borrow Date</th>
-                    <th>Due Date</th>
+                    <!-- Sortable Column Header: Borrow Date -->
+                    <th>
+                        <a class="text-white text-decoration-none"
+                           th:href="@{/admin/users/{userId}/borrowed(userId=${user.id}, status=${selectedStatus}, page=${currentPage}, size=${pageSize}, sortField='borrowDate', sortDir=${sortField == 'borrowDate' ? reverseSortDir : 'asc'})}">
+                            Borrow Date
+                            <i th:if="${sortField == 'borrowDate'}"
+                               th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
+                        </a>
+                    </th>
+                    <!-- Sortable Column Header: Due Date -->
+                    <th>
+                        <a class="text-white text-decoration-none"
+                           th:href="@{/admin/users/{userId}/borrowed(userId=${user.id}, status=${selectedStatus}, page=${currentPage}, size=${pageSize}, sortField='dueDate', sortDir=${sortField == 'dueDate' ? reverseSortDir : 'asc'})}">
+                            Due Date
+                            <i th:if="${sortField == 'dueDate'}"
+                               th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
+                        </a>
+                    </th>
                     <th>Returned Date</th>
                     <th>Status</th>
                 </tr>
@@ -54,7 +74,8 @@
                     <td colspan="6" class="text-center py-4 text-muted">This user has no borrow records matching criteria.</td>
                 </tr>
                 <tr th:each="record, iter : ${borrowRecords}">
-                    <td th:text="${iter.count}">1</td>
+                    <!-- Global Row Index Calculation Across Pages -->
+                    <td th:text="${(currentPage - 1) * pageSize + iter.count}">1</td>
                     <td>
                         <i class="bi bi-book text-primary me-2"></i>
                         <strong th:text="${record.book.title}">Book Title</strong>
@@ -76,6 +97,19 @@
             </table>
         </div>
     </div>
+
+    <!-- Reusable Pagination Fragment Call -->
+    <div th:replace="~{fragments/pagination :: paginationControls(
+            baseUrl='/admin/users/' + ${user.id} + '/borrowed',
+            currentPage=${currentPage},
+            totalPages=${totalPages},
+            pageSize=${pageSize},
+            sortField=${sortField},
+            sortDir=${sortDir},
+            status=${selectedStatus}
+         )}">
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

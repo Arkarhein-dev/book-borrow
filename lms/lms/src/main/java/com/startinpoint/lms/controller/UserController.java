@@ -5,6 +5,7 @@ import java.util.List;
 import com.startinpoint.lms.entity.BorrowRecord;
 import com.startinpoint.lms.entity.BorrowStatus;
 import com.startinpoint.lms.entity.User;
+import com.startinpoint.lms.service.BorrowRecordService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UserController {
 	
 	private final BookService bookService;
+	private final BorrowRecordService borrowRecordService;
 
 	@GetMapping("/home")
 	public String userHome(
@@ -44,17 +46,41 @@ public class UserController {
 		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
 		return "book/user/home";
 	}
-	
+
 	@GetMapping("/my-books")
-	public String getBorrowBooks(Authentication authentication, Model model) {
+	public String getBorrowBooks(
+			Authentication authentication,
+			@RequestParam(value = "status", required = false) BorrowStatus status,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "size", defaultValue = "6") int size,
+			@RequestParam(value = "sortField", defaultValue = "borrowDate") String sortField,
+			@RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
+			Model model
+	) {
 		String username = authentication.getName();
-		List<BorrowRecord> records = bookService.getUserActiveBorrowRecords(username, BorrowStatus.BORROWED);
-		model.addAttribute("records",records);
+		Page<BorrowRecord> pageResult = borrowRecordService.getUserActiveBorrowRecords(
+				username, status, page, size, sortField, sortDir
+		);
+
+		model.addAttribute("borrowRecords", pageResult.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", pageResult.getTotalPages());
+		model.addAttribute("totalItems", pageResult.getTotalElements());
+		model.addAttribute("pageSize", size);
+		model.addAttribute("sortField", sortField);
+		model.addAttribute("sortDir", sortDir);
+		model.addAttribute("selectedStatus", status);
+		model.addAttribute("allStatuses", BorrowStatus.values());
+
 		return "book/user/my-books";
 	}
 
 	@PostMapping("/borrow-book/{id}")
 	public String borrowBook(@PathVariable("id")Long bookId,
+							 @RequestParam(value = "page",defaultValue = "1") int page,
+							 @RequestParam(value = "size",defaultValue = "6") int size,
+							 @RequestParam(value = "sortField",defaultValue = "title") String sortField,
+							 @RequestParam(value = "sortDir",defaultValue = "asc") String sortDir,
 							 Authentication authentication,
 							 RedirectAttributes redirectAttributes){
 		try{
@@ -64,7 +90,7 @@ public class UserController {
 		}catch (Exception e){
 			redirectAttributes.addFlashAttribute("errorMessage",e.getMessage());
 		}
-		return "redirect:/user/home";
+		return String.format("redirect:/user/home?page=%d&size=%d&sortField=%s&sortDir=%s",page,size,sortField,sortDir);
 	}
 
 	@PostMapping("/return-book/{recordId}")

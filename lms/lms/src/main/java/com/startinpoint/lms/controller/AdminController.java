@@ -5,6 +5,7 @@ import com.startinpoint.lms.entity.BorrowStatus;
 import com.startinpoint.lms.entity.User;
 import com.startinpoint.lms.service.BorrowRecordService;
 import com.startinpoint.lms.service.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +25,25 @@ public class AdminController {
 	private final BorrowRecordService borrowRecordService;
 	private final UserService userService;
 	
-//	@GetMapping("/dashboard")
-//	public String adminDashboard(Model model) {
-//		model.addAttribute("books", bookService.getAllBooks());
-//		return "book/admin/dashboard";
-//	}
+	@GetMapping("/dashboard")
+	public String adminDashboard(
+			@RequestParam(name = "page",defaultValue = "1")int page,
+			@RequestParam(name = "size",defaultValue = "6")int size,
+			@RequestParam(name = "sortField",defaultValue = "title")String sortField,
+			@RequestParam(name = "sortDir",defaultValue = "asc")String sortDir,
+			Model model
+	) {
+        Page<Book> bookPage = bookService.getAllBooks(page,size,sortField,sortDir);
+
+		model.addAttribute("books",bookPage.getContent());
+		model.addAttribute("currentPage",page);
+		model.addAttribute("sortField",sortField);
+		model.addAttribute("sortDir",sortDir);
+		model.addAttribute("totalPages",bookPage.getTotalPages());
+		model.addAttribute("totalItems",bookPage.getTotalElements());
+		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc" );
+		return "book/admin/dashboard";
+	}
 
 	@GetMapping("/books/new")
 	public String showCreateForm(Model model) {
@@ -55,41 +70,55 @@ public class AdminController {
 		return "redirect:/admin/dashboard"; 
 	}
 
-	@GetMapping("/{bookId}/borrowers")
-	public String viewBorrowRecords(
-			@PathVariable("bookId")Long bookId,
-			@RequestParam(value = "status",required = false)BorrowStatus status,
-			Model model){
-
-		List<BorrowRecord> borrowRecords = borrowRecordService.getBorrowRecordsByBookAndStatus(bookId,status);
-		Book book = bookService.getBookById(bookId);
-
-		model.addAttribute("book",book);
-		model.addAttribute("borrowRecords",borrowRecords);
-		model.addAttribute("selectedStatus",status);
-		model.addAttribute("allStatuses",BorrowStatus.values());
-
-		return "book/admin/book-borrowers";
-	}
 
 	@GetMapping("/user-lists")
-	public String getAllUsers(Model model){
-		model.addAttribute("users",borrowRecordService.getAllUsers());
+	public String getAllUsers(
+			@RequestParam(name = "page", defaultValue = "1") int page,
+			@RequestParam(name = "size", defaultValue = "6") int pageSize,
+			@RequestParam(name = "sortField", defaultValue = "username") String sortField,
+			@RequestParam(name = "sortDir", defaultValue = "asc") String sortDir,
+			Model model) {
+
+		// Service call passing 'page' (1-indexed)
+		Page<User> userPage = borrowRecordService.getAllUsers(page, pageSize, sortField, sortDir);
+
+		model.addAttribute("users", userPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("pageSize", pageSize);
+		model.addAttribute("sortField", sortField);
+		model.addAttribute("sortDir", sortDir);
+		model.addAttribute("totalPages", userPage.getTotalPages());
+		model.addAttribute("totalItems", userPage.getTotalElements());
+		model.addAttribute("reverseSortDir", sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
+
 		return "book/admin/user-lists";
 	}
+
 
 	@GetMapping("/users/{userId}/borrowed")
 	public String fetchBorrowRecordsByUser(
 			@PathVariable("userId")Long userId,
 			@RequestParam(name = "status", required = false) BorrowStatus status,
+			@RequestParam(name = "page",defaultValue = "1")int page,
+			@RequestParam(name = "size",defaultValue = "6") int pageSize,
+			@RequestParam(name = "sortField",defaultValue = "borrowDate") String sortField,
+			@RequestParam(name = "sortDir",defaultValue = "desc") String sortDir,
 			Model model
 			){
 		User user = userService.getUser(userId);
-		List<BorrowRecord> borrowRecords = borrowRecordService.fetchBorrowRecordByUser(userId, status);
+		Page<BorrowRecord> borrowRecordsPage = borrowRecordService.fetchBorrowRecordByUser(userId, status,page,pageSize,sortField,sortDir);
 		model.addAttribute("user",user);
-		model.addAttribute("borrowRecords",borrowRecords);
+		model.addAttribute("borrowRecords",borrowRecordsPage.getContent());
 		model.addAttribute("selectedStatus",status);
 		model.addAttribute("allStatuses",BorrowStatus.values());
+
+		model.addAttribute("currentPage",page);
+		model.addAttribute("pageSize",pageSize);
+		model.addAttribute("sortField",sortField);
+		model.addAttribute("sortDir",sortDir);
+		model.addAttribute("totalPages",borrowRecordsPage.getTotalPages());
+		model.addAttribute("totalItems",borrowRecordsPage.getTotalElements());
+		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
 
 		return "book/admin/user-borrow-lists";
 	}

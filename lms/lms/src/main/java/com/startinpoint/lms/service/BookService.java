@@ -31,21 +31,14 @@ public class BookService {
 	private final UserRepository userRepository;
 	private final BorrowRecordRepository borrowRecordRepository;
 
-
-
-//	public List<Book> getAllBooks(){
-//		return bookRepository.findAll();
-//	}
-
 	public Page<Book> getAllBooks(int pageNo, int pageSize, String sortField, String sortDir){
+
 		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
 				? Sort.by(sortField).ascending()
 				: Sort.by(sortField).descending();
-
 		Pageable pageable= PageRequest.of(pageNo-1,pageSize,sort);
 		return bookRepository.findAll(pageable);
 	}
-
 
 	public Book getBookById(long id) {
 		return bookRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("Book Not Found."));
@@ -62,9 +55,8 @@ public class BookService {
 		bookRepository.deleteById(id);
 	}
 
-	public List<BorrowRecord> getUserActiveBorrowRecords(String username, BorrowStatus status){
-		return borrowRecordRepository.findByUserUsernameAndStatus(username,status);
-	}
+
+
 	
 	@Transactional
 	public void borrowBook(Long bookId, String username) {

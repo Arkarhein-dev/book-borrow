@@ -34,5 +34,10 @@ public class User {
 	@OneToMany(mappedBy = "user")
 	private List<BorrowRecord> borrowRecords;
 
-
+	public User(String username, String password, UserRole role, boolean isActive) {
+		this.username = username;
+		this.password = password;
+		this.role = role;
+		this.isActive = isActive;
+	}
 }

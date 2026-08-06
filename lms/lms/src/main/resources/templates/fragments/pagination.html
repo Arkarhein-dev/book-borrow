@@ -1,167 +1,39 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <title>Manage Book - Library System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-</head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
 
-<body class="bg-light">
+<!--
+  This signature accepts 6 parameters, so NONE of your existing
+  pages (dashboard, user-lists, book-lists, etc.) will break!
+-->
+<nav th:fragment="paginationControls(baseUrl, currentPage, totalPages, pageSize, sortField, sortDir)"
+     th:if="${totalPages > 1}"
+     class="mt-4">
+    <ul class="pagination justify-content-center mb-0">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-secondary mb-4">
-    <div class="container">
-        <a class="navbar-brand" th:href="@{/user/home}">Library Management System</a>
+        <!-- Previous Button -->
+        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+            <a th:href="@{${baseUrl}(page=${currentPage - 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+               class="page-link">&laquo; Prev</a>
+        </li>
 
-        <div class="d-flex align-items-center gap-2">
+        <!-- Numeric Page Buttons -->
+        <li class="page-item"
+            th:each="i : ${#numbers.sequence(1, totalPages)}"
+            th:classappend="${currentPage == i} ? 'active'">
+            <a class="page-link"
+               th:href="@{${baseUrl}(page=${i}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+               th:text="${i}">1</a>
+        </li>
 
-            <!-- Logged-in User -->
-            <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
-                <span class="text-light me-2">
-                    Hello, <strong sec:authentication="name">User</strong>
-                </span>
+        <!-- Next Button -->
+        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+            <a th:href="@{${baseUrl}(page=${currentPage + 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+               class="page-link">Next &raquo;</a>
+        </li>
 
-                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm">Admin Dashboard</a>
-
-                <a th:href="@{/user/my-books}" class="btn btn-primary btn-sm">My Books</a>
-                <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
-            </div>
-
-            <!-- Anonymous User -->
-            <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
-                <a th:href="@{/login}" class="btn btn-outline-light btn-sm">Login</a>
-                <a th:href="@{/show-register}" class="btn btn-primary btn-sm">Register</a>
-            </div>
-
-        </div>
-    </div>
+    </ul>
 </nav>
 
-<!-- MAIN CONTENT -->
-<div class="container my-5">
-
-    <!-- Display success/error messages -->
-    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${successMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-
-    <!-- Header & Sort Dropdown -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h3 class="mb-0">Explore Library Catalog</h3>
-            <p class="text-muted mb-0">Total Books: <strong th:text="${totalItems}">0</strong></p>
-        </div>
-
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
-                Sort By: <span th:text="${sortField}">title</span> (<span th:text="${#strings.toUpperCase(sortDir)}">ASC</span>)
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
-                        <i class="bi bi-fonts me-1"></i> Title
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
-                        <i class="bi bi-person me-1"></i> Author
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
-                        <i class="bi bi-boxes me-1"></i> Stock
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Table Card -->
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>
-                        <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
-                            Title
-                            <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
-                            Author
-                            <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
-                        </a>
-                    </th>
-                    <th>
-                        <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
-                            Stock
-                            <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
-                        </a>
-                    </th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(books)}">
-                    <td colspan="6" class="text-center py-4 text-muted">No books found.</td>
-                </tr>
-                <tr th:each="book : ${books}">
-                    <td th:text="${book.id}">1</td>
-                    <td th:text="${book.title}">Sample Title</td>
-                    <td th:text="${book.author}">Sample Author</td>
-                    <td th:text="${book.stock}">5</td>
-                    <td>
-                        <span th:if="${book.stock > 0 and book.available}" class="badge bg-success">Available</span>
-                        <span th:unless="${book.stock > 0 and book.available}" class="badge bg-danger">Out of Stock</span>
-                    </td>
-                    <td>
-                        <!-- LOGGED IN USER: Borrow button submits form -->
-                        <div sec:authorize="isAuthenticated()">
-                            <form th:action="@{/user/borrow-book/{id}(id=${book.id})}" method="post">
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-primary"
-                                        th:disabled="${book.stock <= 0 or !book.available}">
-                                    Borrow
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- GUEST USER: Borrow button redirects to /login -->
-                        <div sec:authorize="isAnonymous()">
-                            <a th:href="@{/login}"
-                               class="btn btn-sm btn-outline-secondary"
-                               th:classappend="${book.stock <= 0 or !book.available} ? 'disabled'">
-                                Login to Borrow
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Reusable Fragment Call targeting '/user/home' route -->
-    <div th:replace="~{fragments/pagination :: paginationControls('/user/home')}"></div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
