@@ -20,6 +20,9 @@ public class User {
 	
 	@Column(nullable = false, length = 150)
 	private String username;
+
+	@Column(nullable = false, length = 150, unique = true)
+	private String email;
 	
 	@Column(nullable = false, length = 150)
 	private String password;
@@ -34,8 +37,9 @@ public class User {
 	@OneToMany(mappedBy = "user")
 	private List<BorrowRecord> borrowRecords;
 
-	public User(String username, String password, UserRole role, boolean isActive) {
+	public User(String username, String email, String password, UserRole role, boolean isActive) {
 		this.username = username;
+		this.email = email;
 		this.password = password;
 		this.role = role;
 		this.isActive = isActive;

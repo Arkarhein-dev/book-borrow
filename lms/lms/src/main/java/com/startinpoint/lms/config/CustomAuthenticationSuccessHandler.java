@@ -19,17 +19,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
+        String contextPath = request.getContextPath();
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
         for (GrantedAuthority authority : authorities) {
             // Checks if user has ADMIN authority
             if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                response.sendRedirect("/admin/dashboard");
+                response.sendRedirect(contextPath+"/admin/dashboard");
                 return;
             }
         }
 
         // Default redirect for regular USER
-        response.sendRedirect("/user/home");
+        response.sendRedirect(contextPath + "/user/home");
     }
 }

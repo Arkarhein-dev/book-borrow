@@ -30,6 +30,7 @@ public class BookService {
 	private final BookRepository bookRepository;
 	private final UserRepository userRepository;
 	private final BorrowRecordRepository borrowRecordRepository;
+	private final EmailService emailService;
 
 	public Page<Book> getAllBooks(int pageNo, int pageSize, String sortField, String sortDir){
 
@@ -63,7 +64,8 @@ public class BookService {
 		Book book = getBookById(bookId);
 		
 		if(!book.isAvailable() || book.getStock() <=0) {
-			throw new IllegalArgumentException("Book is out of stock.");
+			emailService.sendOutOfStockNotificationToAdmin(book.getTitle(),book.getId(),username);
+			throw new IllegalArgumentException("Sry, this book is out of stock.");
 		}
 		
 		User user = userRepository.findByUsername(username)

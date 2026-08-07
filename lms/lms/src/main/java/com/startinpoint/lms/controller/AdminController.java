@@ -67,7 +67,7 @@ public class AdminController {
 	@PostMapping("/books/delete/{id}")
 	public String deleteBook(@PathVariable("id") Long id) {
 		bookService.deleteBook(id);
-		return "redirect:/admin/dashboard"; 
+		return "redirect:/admin/dashboard";
 	}
 
 

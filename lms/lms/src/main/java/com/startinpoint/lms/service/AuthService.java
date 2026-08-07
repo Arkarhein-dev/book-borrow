@@ -18,6 +18,11 @@ public class AuthService {
         if(userRepository.existsByUsername(user.getUsername())){
             throw new IllegalArgumentException("User Already Exists");
         }
+
+        if (userRepository.existsByEmail(user.getEmail())){
+            throw new IllegalArgumentException("Email Already Exists.");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(UserRole.USER);
         user.setActive(true);
