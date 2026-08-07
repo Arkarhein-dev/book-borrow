@@ -41,6 +41,17 @@ public class BookService {
 		return bookRepository.findAll(pageable);
 	}
 
+	// Search Books with By keyword
+	public Page<Book> searchBook(String keyword,int pageNo, int pageSize, String sortField, String sortDir ){
+		int pageIndex = (pageNo < 1) ? 0 : pageNo - 1;
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+				? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+
+		Pageable pageable = PageRequest.of(pageIndex,pageSize,sort);
+		return bookRepository.searchBook(keyword, pageable);
+	}
+
 	public Book getBookById(long id) {
 		return bookRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("Book Not Found."));
 	}

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class HomeController {
-    @GetMapping("/")
+    @GetMapping("/lms")
     public String index(){
         return "redirect:/lms/user/home";
     }

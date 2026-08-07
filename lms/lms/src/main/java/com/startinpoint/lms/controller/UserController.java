@@ -29,13 +29,20 @@ public class UserController {
 
 	@GetMapping("/home")
 	public String userHome(
+			@RequestParam(value = "keyword",required = false) String keyword,
 			@RequestParam(value = "page",defaultValue = "1")int page,
 			@RequestParam(value = "size",defaultValue = "6")int size,
 			@RequestParam(value = "sortField",defaultValue = "title")String sortField,
 			@RequestParam(value = "sortDir",defaultValue = "asc")String sortDir,
 			Model model
 	){
-		Page<Book> bookPage = bookService.getAllBooks(page,size,sortField,sortDir);
+		Page<Book> bookPage;
+		if(keyword != null && !keyword.trim().isEmpty()){
+			bookPage = bookService.searchBook(keyword.trim(),page,size,sortField,sortDir);
+		}else{
+			bookPage = bookService.getAllBooks(page,size,sortField,sortDir);
+		}
+
 		model.addAttribute("books",bookPage.getContent());
 		model.addAttribute("currentPage",page);
 		model.addAttribute("pageSize",size);
@@ -44,8 +51,13 @@ public class UserController {
 		model.addAttribute("totalPages",bookPage.getTotalPages());
 		model.addAttribute("totalItems",bookPage.getTotalElements());
 		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
+
+		// Add keyword for search Books
+		model.addAttribute("keyword",keyword);
+
 		return "book/user/home";
 	}
+
 
 	@GetMapping("/my-books")
 	public String getBorrowBooks(

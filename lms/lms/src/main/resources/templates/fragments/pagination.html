@@ -2,18 +2,15 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!--
-  This signature accepts 6 parameters, so NONE of your existing
-  pages (dashboard, user-lists, book-lists, etc.) will break!
--->
-<nav th:fragment="paginationControls(baseUrl, currentPage, totalPages, pageSize, sortField, sortDir)"
+<!-- Added keyword=${keyword} with default value so existing callers won't break -->
+<nav th:fragment="paginationControls(baseUrl, currentPage, totalPages, pageSize, sortField, sortDir, keyword=${keyword})"
      th:if="${totalPages > 1}"
      class="mt-4">
     <ul class="pagination justify-content-center mb-0">
 
         <!-- Previous Button -->
         <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
-            <a th:href="@{${baseUrl}(page=${currentPage - 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+            <a th:href="@{${baseUrl}(page=${currentPage - 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus}, keyword=${keyword})}"
                class="page-link">&laquo; Prev</a>
         </li>
 
@@ -22,13 +19,13 @@
             th:each="i : ${#numbers.sequence(1, totalPages)}"
             th:classappend="${currentPage == i} ? 'active'">
             <a class="page-link"
-               th:href="@{${baseUrl}(page=${i}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+               th:href="@{${baseUrl}(page=${i}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus}, keyword=${keyword})}"
                th:text="${i}">1</a>
         </li>
 
         <!-- Next Button -->
         <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
-            <a th:href="@{${baseUrl}(page=${currentPage + 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus})}"
+            <a th:href="@{${baseUrl}(page=${currentPage + 1}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, status=${selectedStatus}, keyword=${keyword})}"
                class="page-link">Next &raquo;</a>
         </li>
 
