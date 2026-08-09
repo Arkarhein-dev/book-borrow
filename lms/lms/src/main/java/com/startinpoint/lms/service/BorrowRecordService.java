@@ -22,10 +22,9 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
     private final UserRepository userRepository;
 
-
     public Page<BorrowRecord> getUserActiveBorrowRecords(
             String username, BorrowStatus status,
-            int page,int pageSize, String sortField, String sortDir
+        int page,int pageSize, String sortField, String sortDir
     ){
         int pageIndex = (page < 1) ? 0 : page-1;
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -37,6 +36,22 @@ public class BorrowRecordService {
             return borrowRecordRepository.findByUserUsername(username,pageable);
         }
         return borrowRecordRepository.findByUserUsernameAndStatus(username,status,pageable);
+    }
+
+    public Page<BorrowRecord> fetchBorrowRecordByKeyword(
+            String keyword, String username, BorrowStatus status,
+            int page, int size, String sortField, String sortDir
+    ) {
+        int pageIndex = (page < 1) ? 0 : page - 1;
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortField).ascending()
+                : Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(pageIndex,size, sort);
+
+        if(status == null){
+            return borrowRecordRepository.findBorrowBookBykeyword(username,keyword,pageable);
+        }
+        return borrowRecordRepository.findBorrowRecordByKeywordAndStatus(username,keyword,status,pageable);
     }
 
     // Get All Users
@@ -68,4 +83,6 @@ public class BorrowRecordService {
         }
         return borrowRecordRepository.findByUserId(userId,pageable);
     }
+
+
 }

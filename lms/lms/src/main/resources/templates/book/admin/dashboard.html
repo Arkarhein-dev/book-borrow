@@ -135,16 +135,7 @@
         </div>
     </div>
 
-    <!-- Pagination Controls -->
-    <div th:replace="~{/fragments/pagination :: paginationControls(
-            baseUrl='/admin/dashboard',
-            currentPage=${currentPage},
-            totalPages=${totalPages},
-            pageSize=${pageSize},
-            sortField=${sortField},
-            sortDir=${sortDir}
-         )}">
-    </div>
+    <div th:replace="~{fragments/pagination :: paginationControls}"></div>
 
 </div>
 

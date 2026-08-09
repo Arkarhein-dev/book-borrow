@@ -162,7 +162,7 @@
                                   method="post">
                                 <button type="submit"
                                         class="btn btn-sm btn-outline-primary"
-                                        th:disabled="${book.stock <= 0 or !book.available}">
+                                >
                                     Borrow
                                 </button>
                             </form>
@@ -182,17 +182,7 @@
         </div>
     </div>
 
-    <!-- Pagination Fragment Call with keyword -->
-    <div th:replace="~{/fragments/pagination :: paginationControls(
-            baseUrl='/user/home',
-            currentPage=${currentPage},
-            totalPages=${totalPages},
-            pageSize=${pageSize},
-            sortField=${sortField},
-            sortDir=${sortDir},
-            keyword=${keyword}
-         )}">
-    </div>
+    <div th:replace="~{fragments/pagination :: paginationControls}"></div>
 
 </div>
 

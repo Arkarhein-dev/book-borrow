@@ -62,6 +62,7 @@ public class UserController {
 	@GetMapping("/my-books")
 	public String getBorrowBooks(
 			Authentication authentication,
+			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "status", required = false) BorrowStatus status,
 			@RequestParam(value = "page", defaultValue = "1") int page,
 			@RequestParam(value = "size", defaultValue = "6") int size,
@@ -69,11 +70,21 @@ public class UserController {
 			@RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
 			Model model
 	) {
+		Page<BorrowRecord> pageResult;
 		String username = authentication.getName();
-		Page<BorrowRecord> pageResult = borrowRecordService.getUserActiveBorrowRecords(
-				username, status, page, size, sortField, sortDir
-		);
 
+		if (keyword != null && !keyword.trim().isEmpty()) {
+			pageResult = borrowRecordService.fetchBorrowRecordByKeyword(
+					keyword.trim(), username, status, page, size, sortField, sortDir
+			);
+		} else {
+			pageResult = borrowRecordService.getUserActiveBorrowRecords(
+					username, status, page, size, sortField, sortDir
+			);
+		}
+
+		model.addAttribute("baseUrl", "/user/my-books");
+		model.addAttribute("keyword", keyword);
 		model.addAttribute("borrowRecords", pageResult.getContent());
 		model.addAttribute("currentPage", page);
 		model.addAttribute("totalPages", pageResult.getTotalPages());

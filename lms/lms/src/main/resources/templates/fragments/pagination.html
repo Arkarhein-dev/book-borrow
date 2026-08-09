@@ -2,8 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!-- Added keyword=${keyword} with default value so existing callers won't break -->
-<nav th:fragment="paginationControls(baseUrl, currentPage, totalPages, pageSize, sortField, sortDir, keyword=${keyword})"
+<nav th:fragment="paginationControls"
      th:if="${totalPages > 1}"
      class="mt-4">
     <ul class="pagination justify-content-center mb-0">
@@ -14,7 +13,7 @@
                class="page-link">&laquo; Prev</a>
         </li>
 
-        <!-- Numeric Page Buttons -->
+        <!-- Page Numbers -->
         <li class="page-item"
             th:each="i : ${#numbers.sequence(1, totalPages)}"
             th:classappend="${currentPage == i} ? 'active'">
