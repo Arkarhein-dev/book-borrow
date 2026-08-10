@@ -2,6 +2,8 @@ package com.startinpoint.lms.controller;
 
 import java.util.List;
 
+import com.startinpoint.lms.dto.response.BookResponseDto;
+import com.startinpoint.lms.dto.response.BorrowRecordResponseDto;
 import com.startinpoint.lms.entity.BorrowRecord;
 import com.startinpoint.lms.entity.BorrowStatus;
 import com.startinpoint.lms.entity.User;
@@ -29,31 +31,51 @@ public class UserController {
 
 	@GetMapping("/home")
 	public String userHome(
-			@RequestParam(value = "keyword",required = false) String keyword,
-			@RequestParam(value = "page",defaultValue = "1")int page,
-			@RequestParam(value = "size",defaultValue = "6")int size,
-			@RequestParam(value = "sortField",defaultValue = "title")String sortField,
-			@RequestParam(value = "sortDir",defaultValue = "asc")String sortDir,
+			@RequestParam(value = "availableOnly", required = false) Boolean availableOnly,
+			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "size", defaultValue = "6") int size,
+			@RequestParam(value = "sortField", defaultValue = "title") String sortField,
+			@RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
 			Model model
 	){
-		Page<Book> bookPage;
-		if(keyword != null && !keyword.trim().isEmpty()){
-			bookPage = bookService.searchBook(keyword.trim(),page,size,sortField,sortDir);
-		}else{
-			bookPage = bookService.getAllBooks(page,size,sortField,sortDir);
+		Page<BookResponseDto> bookPage;
+		Boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+		Boolean isAvailableOnly = Boolean.TRUE.equals(availableOnly);
+
+		if(hasKeyword && isAvailableOnly){
+			bookPage = bookService.getAvailableBooksWithKeyword(keyword.trim(), page, size, sortField, sortDir);
+		} else if(isAvailableOnly){
+			bookPage = bookService.getAvailableBooks(page, size, sortField, sortDir);
+		} else if(hasKeyword){
+			bookPage = bookService.searchBook(keyword.trim(), page, size, sortField, sortDir);
+		} else {
+			bookPage = bookService.getAllBooks(page, size, sortField, sortDir);
 		}
 
-		model.addAttribute("books",bookPage.getContent());
-		model.addAttribute("currentPage",page);
-		model.addAttribute("pageSize",size);
-		model.addAttribute("sortField",sortField);
-		model.addAttribute("sortDir",sortDir);
-		model.addAttribute("totalPages",bookPage.getTotalPages());
-		model.addAttribute("totalItems",bookPage.getTotalElements());
-		model.addAttribute("reverseSortDir",sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
+		// Guard against out-of-bounds page requests after toggling filters
+		if (page > bookPage.getTotalPages() && bookPage.getTotalPages() > 0) {
+			StringBuilder redirectUrl = new StringBuilder(
+					String.format("redirect:/user/home?page=%d&size=%d&sortField=%s&sortDir=%s",
+							bookPage.getTotalPages(), size, sortField, sortDir)
+			);
+			if (hasKeyword) redirectUrl.append("&keyword=").append(keyword.trim());
+			if (availableOnly != null) redirectUrl.append("&availableOnly=").append(availableOnly);
+			return redirectUrl.toString();
+		}
 
-		// Add keyword for search Books
-		model.addAttribute("keyword",keyword);
+		model.addAttribute("baseUrl", "/user/home"); // Required by pagination fragment
+		model.addAttribute("books", bookPage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("pageSize", size);
+		model.addAttribute("sortField", sortField);
+		model.addAttribute("sortDir", sortDir);
+		model.addAttribute("totalPages", bookPage.getTotalPages());
+		model.addAttribute("totalItems", bookPage.getTotalElements());
+		model.addAttribute("reverseSortDir", sortDir.equalsIgnoreCase("asc") ? "desc" : "asc");
+
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("availableOnly", availableOnly);
 
 		return "book/user/home";
 	}
@@ -70,7 +92,7 @@ public class UserController {
 			@RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
 			Model model
 	) {
-		Page<BorrowRecord> pageResult;
+		Page<BorrowRecordResponseDto> pageResult;
 		String username = authentication.getName();
 
 		if (keyword != null && !keyword.trim().isEmpty()) {

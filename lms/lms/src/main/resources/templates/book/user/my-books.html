@@ -115,21 +115,21 @@
 
                 <tr th:each="record, iter : ${borrowRecords}">
                     <td th:text="${(currentPage - 1) * pageSize + iter.count}">1</td>
-                    <td class="fw-semibold" th:text="${record.book.title}">Book Title</td>
-                    <td th:text="${record.book.author}">Author</td>
-                    <td th:text="${#temporals.format(record.borrowDate, 'dd MMM yyyy')}">01 Jan 2026</td>
-                    <td th:text="${#temporals.format(record.dueDate, 'dd MMM yyyy')}">15 Jan 2026</td>
+                    <td class="fw-semibold" th:text="${record.bookTitle()}">Book Title</td>
+                    <td th:text="${record.bookAuthor()}">Author</td>
+                    <td th:text="${#temporals.format(record.borrowDate(), 'dd MMM yyyy')}">01 Jan 2026</td>
+                    <td th:text="${#temporals.format(record.dueDate(), 'dd MMM yyyy')}">15 Jan 2026</td>
                     <td>
-                        <span th:if="${record.status.name() == 'BORROWED'}" class="badge bg-warning text-dark">BORROWED</span>
-                        <span th:if="${record.status.name() == 'RETURNED'}" class="badge bg-success">RETURNED</span>
-                        <span th:if="${record.status.name() == 'OVERDUE'}" class="badge bg-danger">OVERDUE</span>
+                        <span th:if="${record.status().name() == 'BORROWED'}" class="badge bg-warning text-dark">BORROWED</span>
+                        <span th:if="${record.status().name() == 'RETURNED'}" class="badge bg-success">RETURNED</span>
+                        <span th:if="${record.status().name() == 'OVERDUE'}" class="badge bg-danger">OVERDUE</span>
                     </td>
                     <td>
-                        <form th:if="${record.status.name() == 'BORROWED' || record.status.name() == 'OVERDUE'}"
-                              th:action="@{/user/return-book/{recordId}(recordId=${record.id})}" method="post">
+                        <form th:if="${record.status().name() == 'BORROWED' || record.status().name() == 'OVERDUE'}"
+                              th:action="@{/user/return-book/{recordId}(recordId=${record.id()})}" method="post">
                             <button type="submit" class="btn btn-sm btn-outline-danger">Return Book</button>
                         </form>
-                        <span th:unless="${record.status.name() == 'BORROWED' || record.status.name() == 'OVERDUE'}" class="text-muted">-</span>
+                        <span th:unless="${record.status().name() == 'BORROWED' || record.status().name() == 'OVERDUE'}" class="text-muted">-</span>
                     </td>
                 </tr>
                 </tbody>

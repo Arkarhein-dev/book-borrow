@@ -29,7 +29,6 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
 
     // --- Search Queries with Keyword & Optional Null Safety ---
-
     @EntityGraph(attributePaths = {"user", "book"})
     @Query("""
         SELECT br FROM BorrowRecord br
@@ -48,8 +47,8 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     @EntityGraph(attributePaths = {"user", "book"})
     @Query("""
-        SELECT br FROM BorrowRecord br 
-        WHERE br.user.username = :username 
+        SELECT br FROM BorrowRecord br
+        WHERE br.user.username = :username
           AND br.status = :status
           AND (
             :keyword IS NULL OR :keyword = '' OR
@@ -59,6 +58,40 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     """)
     Page<BorrowRecord> findBorrowRecordByKeywordAndStatus(
             @Param("username") String username,
+            @Param("keyword") String keyword,
+            @Param("status") BorrowStatus status,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"user", "book"})
+    @Query("""
+    SELECT br FROM BorrowRecord br
+    WHERE br.user.id = :userId
+      AND (
+        :keyword IS NULL OR :keyword = '' OR
+        LOWER(br.book.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+        LOWER(br.book.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      )
+""")
+    Page<BorrowRecord> fetchBorrowRecordByUserWithKeyword(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"user", "book"})
+    @Query("""
+    SELECT br FROM BorrowRecord br
+    WHERE br.user.id = :userId
+      AND br.status = :status
+      AND (
+        :keyword IS NULL OR :keyword = '' OR
+        LOWER(br.book.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+        LOWER(br.book.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      )
+""")
+    Page<BorrowRecord> fetchBorrowRecordByUserWithKeywordAndStatus(
+            @Param("userId") Long userId,
             @Param("keyword") String keyword,
             @Param("status") BorrowStatus status,
             Pageable pageable

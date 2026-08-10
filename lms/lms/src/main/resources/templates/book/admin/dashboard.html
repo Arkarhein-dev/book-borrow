@@ -32,11 +32,43 @@
 <div class="container my-4">
 
     <!-- Header & Action Bar -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
         <div>
             <h2 class="mb-0">Book Inventory</h2>
             <p class="text-muted mb-0">Total Books: <strong th:text="${totalItems}">0</strong></p>
         </div>
+
+        <!-- Search Form -->
+        <form th:action="@{/admin/dashboard}" method="get" class="w-100" style="max-width: 450px;">
+            <!-- Preserve sorting and size parameters when submitting a new search -->
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <input type="hidden" name="sortField" th:value="${sortField}">
+            <input type="hidden" name="sortDir" th:value="${sortDir}">
+
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       class="form-control border-start-0 ps-0"
+                       placeholder="Search books by title or author..."
+                       aria-label="Search books">
+
+                <button class="btn btn-primary px-3" type="submit">
+                    Search
+                </button>
+
+                <!-- Clear button appears only when search keyword is present -->
+                <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+                   th:href="@{/admin/dashboard(size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   class="btn btn-outline-secondary"
+                   title="Clear search">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
 
         <div class="d-flex align-items-center gap-2">
             <!-- Sort Dropdown -->
@@ -47,19 +79,19 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li>
                         <a class="dropdown-item"
-                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=1, keyword=${keyword}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
                             <i class="bi bi-fonts me-1"></i> Title
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item"
-                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=1, keyword=${keyword}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
                             <i class="bi bi-person me-1"></i> Author
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item"
-                           th:href="@{/admin/dashboard(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=1, keyword=${keyword}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
                             <i class="bi bi-boxes me-1"></i> Stock
                         </a>
                     </li>
@@ -80,21 +112,21 @@
                 <tr>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=${currentPage}, keyword=${keyword}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'})}">
                             Title
                             <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=${currentPage}, keyword=${keyword}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'})}">
                             Author
                             <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/admin/dashboard(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
+                           th:href="@{/admin/dashboard(page=${currentPage}, keyword=${keyword}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'})}">
                             Stock
                             <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
                         </a>
@@ -117,9 +149,6 @@
                     <td th:text="${book.author}">Sample Author</td>
                     <td th:text="${book.stock}">10</td>
                     <td class="text-center">
-
-<!--                        <a th:href="@{/admin/{bookId}/borrowers(bookId=${book.id})}" class="btn btn-primary btn-sm mx-1">Who Borrowed</a>-->
-
                         <a th:href="@{/admin/books/edit/{id}(id=${book.id})}" class="btn btn-warning btn-sm mx-1">Edit</a>
 
                         <form th:action="@{/admin/books/delete/{id}(id=${book.id})}"
@@ -135,6 +164,7 @@
         </div>
     </div>
 
+    <!-- Parameterless Pagination Fragment -->
     <div th:replace="~{fragments/pagination :: paginationControls}"></div>
 
 </div>

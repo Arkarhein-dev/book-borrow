@@ -15,9 +15,25 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Page<Book> findByAvailableTrueAndTitleContainingIgnoreCase(String title, Pageable pageable);
 
+    // 1. Available books without keyword
+    Page<Book> findByStockGreaterThan(int stock, Pageable pageable);
+
+    // 2. Available books WITH keyword
     @Query("""
-        select b from Book b where lower(b.title) like lower(concat('%',:keyword, '%')) or 
-        lower(b.author) like lower(concat('%',:keyword, '%') ) 
-""")
-    Page<Book> searchBook(@Param("keyword") String keyword, Pageable pageable);
+        SELECT b FROM Book b 
+        WHERE b.stock > 0 
+        AND (
+            LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+            LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        )
+    """)
+    Page<Book> searchAvailableBooksWithKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    // 3. All books WITH keyword
+    @Query("""
+        SELECT b FROM Book b WHERE 
+        LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+        LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    Page<Book> searchBookWithKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

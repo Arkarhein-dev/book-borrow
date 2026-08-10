@@ -1,9 +1,8 @@
 package com.startinpoint.lms.config;
 
 import com.startinpoint.lms.entity.User;
-import com.startinpoint.lms.entity.UserRole;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,4 +49,5 @@ public class SecurityUser implements UserDetails {
     public boolean isEnabled() {
         return user.isActive();
     }
+
 }

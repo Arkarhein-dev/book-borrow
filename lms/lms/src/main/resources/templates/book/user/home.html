@@ -51,11 +51,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <!-- Toolbar: Search Bar & Sort Dropdown -->
+    <!-- Toolbar: Search Bar, Filter Button & Sort Dropdown -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4">
 
         <!-- Search Input Form -->
         <form th:action="@{/user/home}" method="get" class="w-100" style="max-width: 450px;">
+            <!-- Hidden inputs preserve filter & pagination params on search -->
+            <input type="hidden" name="availableOnly" th:if="${availableOnly != null}" th:value="${availableOnly}">
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <input type="hidden" name="sortField" th:value="${sortField}">
+            <input type="hidden" name="sortDir" th:value="${sortDir}">
+
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search text-muted"></i>
@@ -71,9 +77,9 @@
                     Search
                 </button>
 
-                <!-- Clear button appears only when a search keyword is present -->
+                <!-- Clear search maintains availableOnly state -->
                 <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                   th:href="@{/user/home}"
+                   th:href="@{/user/home(availableOnly=${availableOnly}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
                    class="btn btn-outline-secondary"
                    title="Clear search">
                     <i class="bi bi-x-lg"></i>
@@ -81,35 +87,50 @@
             </div>
         </form>
 
-        <!-- Sort By Dropdown -->
-        <div class="dropdown">
+        <div class="d-flex justify-content-around align-items-center gap-3">
+            <!-- Toggle Availability Filter Button (Preserves currentPage, keyword & sort) -->
+            <div>
+                <a th:if="${availableOnly == null or !availableOnly}"
+                   th:href="@{/user/home(page=${currentPage}, availableOnly=true, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   class="btn btn-outline-success">
+                    <i class="bi bi-funnel"></i> Available Only
+                </a>
+
+                <a th:if="${availableOnly != null and availableOnly}"
+                   th:href="@{/user/home(page=${currentPage}, availableOnly=false, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   class="btn btn-success fw-bold">
+                    <i class="bi bi-check-circle-fill"></i> Showing Available
+                </a>
+            </div>
+
+            <!-- Sort By Dropdown (Preserves availableOnly & keyword) -->
+            <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle btn-sm shadow-sm" type="button" data-bs-toggle="dropdown">
                 <i class="bi bi-funnel me-1"></i> Sort By: <span th:text="${sortField}">title</span> (<span th:text="${#strings.toUpperCase(sortDir)}">ASC</span>)
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                         <i class="bi bi-fonts me-1"></i> Title
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                         <i class="bi bi-person me-1"></i> Author
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                         <i class="bi bi-boxes me-1"></i> Stock
                     </a>
                 </li>
             </ul>
         </div>
-
+        </div>
     </div>
-
 
     <!-- Table Card -->
     <div class="card shadow-sm border-0 mb-4">
@@ -120,21 +141,21 @@
 
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                             Title
                             <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                             Author
                             <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
-                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword})}">
+                           th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
                             Stock
                             <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
                         </a>
@@ -158,11 +179,10 @@
                     <td>
                         <!-- LOGGED IN USER: Borrow button submits form with current page context -->
                         <div sec:authorize="isAuthenticated()">
-                            <form th:action="@{/user/borrow-book/{id}(id=${book.id}, page=${currentPage}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}"
+                            <form th:action="@{/user/borrow-book/{id}(id=${book.id}, page=${currentPage}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword}, availableOnly=${availableOnly})}"
                                   method="post">
                                 <button type="submit"
-                                        class="btn btn-sm btn-outline-primary"
-                                >
+                                        class="btn btn-sm btn-outline-primary">
                                     Borrow
                                 </button>
                             </form>
@@ -182,6 +202,7 @@
         </div>
     </div>
 
+    <!-- Pagination Fragment -->
     <div th:replace="~{fragments/pagination :: paginationControls}"></div>
 
 </div>

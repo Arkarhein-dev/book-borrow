@@ -1,16 +1,16 @@
 package com.startinpoint.lms.service;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import org.springframework.beans.BeanUtils;
+import com.startinpoint.lms.dto.request.BookCreateOrUpdateRequestDto;
+import com.startinpoint.lms.dto.response.BookResponseDto;
+import com.startinpoint.lms.mapper.BookMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
 
 import com.startinpoint.lms.entity.Book;
 import com.startinpoint.lms.entity.BorrowRecord;
@@ -20,7 +20,6 @@ import com.startinpoint.lms.repository.BookRepository;
 import com.startinpoint.lms.repository.BorrowRecordRepository;
 import com.startinpoint.lms.repository.UserRepository;
 
-import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -31,48 +30,60 @@ public class BookService {
 	private final UserRepository userRepository;
 	private final BorrowRecordRepository borrowRecordRepository;
 	private final EmailService emailService;
+	private final BookMapper bookMapper;
 
-	public Page<Book> getAllBooks(int pageNo, int pageSize, String sortField, String sortDir){
-
+	public Page<BookResponseDto> getAllBooks(int pageNo, int pageSize, String sortField, String sortDir) {
+		int pageIndex = (pageNo < 1) ? 0 : pageNo - 1;
 		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
 				? Sort.by(sortField).ascending()
 				: Sort.by(sortField).descending();
-		Pageable pageable= PageRequest.of(pageNo-1,pageSize,sort);
-		return bookRepository.findAll(pageable);
+		Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
+
+		return bookRepository.findAll(pageable).map(bookMapper::toBookResponse);
+	}
+
+	public Page<BookResponseDto> getAllBooksWithKeyword(int page, String keyword, int size, String sortField, String sortDir) {
+		int pageIndex = (page < 1) ? 0 : page - 1;
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+				? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+
+		Pageable pageable = PageRequest.of(pageIndex, size, sort);
+		return bookRepository.searchBookWithKeyword(keyword, pageable).map(bookMapper::toBookResponse);
 	}
 
 	// Search Books with By keyword
-	public Page<Book> searchBook(String keyword,int pageNo, int pageSize, String sortField, String sortDir ){
+	public Page<BookResponseDto> searchBook(String keyword,int pageNo, int pageSize, String sortField, String sortDir ){
 		int pageIndex = (pageNo < 1) ? 0 : pageNo - 1;
 		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
 				? Sort.by(sortField).ascending()
 				: Sort.by(sortField).descending();
 
 		Pageable pageable = PageRequest.of(pageIndex,pageSize,sort);
-		return bookRepository.searchBook(keyword, pageable);
+		return bookRepository.searchBookWithKeyword(keyword, pageable).map(bookMapper::toBookResponse);
 	}
 
-	public Book getBookById(long id) {
-		return bookRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("Book Not Found."));
+	public BookResponseDto getBookById(long id) {
+		Book book = bookRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("Book Not Found."));
+		return bookMapper.toBookResponse(book);
 	}
 
-	public Book saveOrUpdateBook(Book book) {
+	public void saveOrUpdateBook(BookCreateOrUpdateRequestDto dto) {
+		Book book = bookMapper.toBookEntity(dto);
+
 		if(book.isAvailable() || book.getStock() >0){
 			book.setAvailable(true);
 		}
-		return bookRepository.save(book);
+		bookRepository.save(book);
 	}
 	
 	public void deleteBook(Long id) {
 		bookRepository.deleteById(id);
 	}
 
-
-
-	
 	@Transactional
 	public void borrowBook(Long bookId, String username) {
-		Book book = getBookById(bookId);
+		Book book = bookRepository.findById(bookId).orElseThrow();
 		
 		if(!book.isAvailable() || book.getStock() <=0) {
 			emailService.sendOutOfStockNotificationToAdmin(book.getTitle(),book.getId(),username);
@@ -120,6 +131,28 @@ public class BookService {
 		book.setStock(book.getStock()+1);
 		book.setAvailable(true);
 		bookRepository.save(book);
+	}
+
+	// Available Books ONLY (No keyword)
+	public Page<BookResponseDto> getAvailableBooks(int pageNo, int pageSize, String sortField, String sortDir) {
+		int pageIndex = (pageNo < 1) ? 0 : pageNo - 1;
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+				? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+
+		Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
+		return bookRepository.findByStockGreaterThan(0, pageable).map(bookMapper::toBookResponse);
+	}
+
+	// Available Books ONLY + Keyword Search
+	public Page<BookResponseDto> getAvailableBooksWithKeyword(String keyword, int pageNo, int pageSize, String sortField, String sortDir) {
+		int pageIndex = (pageNo < 1) ? 0 : pageNo - 1;
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+				? Sort.by(sortField).ascending()
+				: Sort.by(sortField).descending();
+
+		Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
+		return bookRepository.searchAvailableBooksWithKeyword(keyword, pageable).map(bookMapper::toBookResponse);
 	}
 
 }

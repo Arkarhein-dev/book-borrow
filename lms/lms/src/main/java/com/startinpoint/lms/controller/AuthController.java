@@ -1,7 +1,9 @@
 package com.startinpoint.lms.controller;
 
+import com.startinpoint.lms.dto.request.UserCreateRequestDto;
 import com.startinpoint.lms.entity.User;
 import com.startinpoint.lms.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,7 +21,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
-
 	private final AuthService authService;
 
 	@GetMapping("/login")
@@ -34,7 +35,7 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public String register(@ModelAttribute("user")User user, RedirectAttributes redirectAttributes){
+	public String register(@Valid @ModelAttribute("user") UserCreateRequestDto user, RedirectAttributes redirectAttributes){
 		try{
 			authService.registerUser(user);
 			redirectAttributes.addFlashAttribute("successMessage","Account Created");
