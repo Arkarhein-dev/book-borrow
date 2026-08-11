@@ -25,6 +25,7 @@ public class SecurityConfig {
         logoutSuccessHandler.setTargetUrlParameter(null);
 
         http
+                .csrf(c -> c.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/user/home", "/show-register", "/register", "/login", "/books/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

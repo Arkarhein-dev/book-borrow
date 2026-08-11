@@ -3,7 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Book - Library System</title>
+    <title>User Home Page - Library System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
@@ -15,7 +15,6 @@
         <a class="navbar-brand" th:href="@{/user/home}">Library Management System</a>
 
         <div class="d-flex align-items-center gap-2">
-
             <!-- Logged-in User -->
             <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
                 <span class="text-light me-2">
@@ -23,9 +22,12 @@
                 </span>
 
                 <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" class="btn btn-warning btn-sm">Admin Dashboard</a>
-
                 <a th:href="@{/user/my-books}" class="btn btn-primary btn-sm">My Books</a>
-                <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
+
+                <!-- Explicit POST Form for Logout -->
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Logout</button>
+                </form>
             </div>
 
             <!-- Anonymous User -->
@@ -33,7 +35,6 @@
                 <a th:href="@{/login}" class="btn btn-outline-light btn-sm">Login</a>
                 <a th:href="@{/show-register}" class="btn btn-primary btn-sm">Register</a>
             </div>
-
         </div>
     </div>
 </nav>
@@ -56,7 +57,7 @@
 
         <!-- Search Input Form -->
         <form th:action="@{/user/home}" method="get" class="w-100" style="max-width: 450px;">
-            <!-- Hidden inputs preserve filter & pagination params on search -->
+            <input type="hidden" name="page" value="1">
             <input type="hidden" name="availableOnly" th:if="${availableOnly != null}" th:value="${availableOnly}">
             <input type="hidden" name="size" th:value="${pageSize}">
             <input type="hidden" name="sortField" th:value="${sortField}">
@@ -73,13 +74,10 @@
                        placeholder="Search books by title or author..."
                        aria-label="Search books">
 
-                <button class="btn btn-primary px-3" type="submit">
-                    Search
-                </button>
+                <button class="btn btn-primary px-3" type="submit">Search</button>
 
-                <!-- Clear search maintains availableOnly state -->
                 <a th:if="${keyword != null and !#strings.isEmpty(keyword)}"
-                   th:href="@{/user/home(availableOnly=${availableOnly}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   th:href="@{/user/home(page=1, availableOnly=${availableOnly}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
                    class="btn btn-outline-secondary"
                    title="Clear search">
                     <i class="bi bi-x-lg"></i>
@@ -88,47 +86,46 @@
         </form>
 
         <div class="d-flex justify-content-around align-items-center gap-3">
-            <!-- Toggle Availability Filter Button (Preserves currentPage, keyword & sort) -->
             <div>
                 <a th:if="${availableOnly == null or !availableOnly}"
-                   th:href="@{/user/home(page=${currentPage}, availableOnly=true, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   th:href="@{/user/home(page=1, availableOnly=true, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
                    class="btn btn-outline-success">
                     <i class="bi bi-funnel"></i> Available Only
                 </a>
 
                 <a th:if="${availableOnly != null and availableOnly}"
-                   th:href="@{/user/home(page=${currentPage}, availableOnly=false, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
+                   th:href="@{/user/home(page=1, availableOnly=false, keyword=${keyword}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir})}"
                    class="btn btn-success fw-bold">
                     <i class="bi bi-check-circle-fill"></i> Showing Available
                 </a>
             </div>
 
-            <!-- Sort By Dropdown (Preserves availableOnly & keyword) -->
+            <!-- Sort By Dropdown -->
             <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle btn-sm shadow-sm" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-funnel me-1"></i> Sort By: <span th:text="${sortField}">title</span> (<span th:text="${#strings.toUpperCase(sortDir)}">ASC</span>)
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                        <i class="bi bi-fonts me-1"></i> Title
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                        <i class="bi bi-person me-1"></i> Author
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item"
-                       th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                        <i class="bi bi-boxes me-1"></i> Stock
-                    </a>
-                </li>
-            </ul>
-        </div>
+                <button class="btn btn-outline-secondary dropdown-toggle btn-sm shadow-sm" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-funnel me-1"></i> Sort By: <span th:text="${sortField}">title</span> (<span th:text="${#strings.toUpperCase(sortDir)}">ASC</span>)
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/user/home(page=1, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
+                            <i class="bi bi-fonts me-1"></i> Title
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/user/home(page=1, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
+                            <i class="bi bi-person me-1"></i> Author
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           th:href="@{/user/home(page=1, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
+                            <i class="bi bi-boxes me-1"></i> Stock
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -138,26 +135,22 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                 <tr>
-
                     <th>
                         <a class="text-white text-decoration-none"
                            th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='title', sortDir=${sortField == 'title' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                            Title
-                            <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
+                            Title <i th:if="${sortField == 'title'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
                            th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='author', sortDir=${sortField == 'author' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                            Author
-                            <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
+                            Author <i th:if="${sortField == 'author'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-alpha-down' : 'bi bi-sort-alpha-up'}"></i>
                         </a>
                     </th>
                     <th>
                         <a class="text-white text-decoration-none"
                            th:href="@{/user/home(page=${currentPage}, size=${pageSize}, sortField='stock', sortDir=${sortField == 'stock' ? reverseSortDir : 'asc'}, keyword=${keyword}, availableOnly=${availableOnly})}">
-                            Stock
-                            <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
+                            Stock <i th:if="${sortField == 'stock'}" th:class="${sortDir == 'asc' ? 'bi bi-sort-numeric-down' : 'bi bi-sort-numeric-up'}"></i>
                         </a>
                     </th>
                     <th>Status</th>
@@ -177,23 +170,44 @@
                         <span th:unless="${book.stock > 0 and book.available}" class="badge bg-danger">Out of Stock</span>
                     </td>
                     <td>
-                        <!-- LOGGED IN USER: Borrow button submits form with current page context -->
+                        <!-- LOGGED IN USER: Always show Borrow button regardless of stock status -->
                         <div sec:authorize="isAuthenticated()">
-                            <form th:action="@{/user/borrow-book/{id}(id=${book.id}, page=${currentPage}, size=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword}, availableOnly=${availableOnly})}"
-                                  method="post">
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-primary">
-                                    Borrow
+                            <form th:action="@{/user/borrow-book/{id}(id=${book.id})}"
+                                  method="post"
+                                  class="d-flex align-items-center gap-2"
+                                  th:data-stock="${book.stock > 0 and book.available ? 'true' : 'false'}"
+                                  onsubmit="return handleBorrowClick(event, this)">
+
+                                <!-- Preserved pagination params for redirect back -->
+                                <input type="hidden" name="page" th:value="${currentPage}">
+                                <input type="hidden" name="size" th:value="${pageSize}">
+                                <input type="hidden" name="sortField" th:value="${sortField}">
+                                <input type="hidden" name="sortDir" th:value="${sortDir}">
+                                <input type="hidden" name="keyword" th:value="${keyword}">
+                                <input type="hidden" name="availableOnly" th:value="${availableOnly}">
+
+                                <!-- Hidden by default; toggles open on first Borrow click -->
+                                <div class="input-group input-group-sm days-wrapper d-none" style="width: 120px;">
+                                    <input type="number"
+                                           name="dueDate"
+                                           class="form-control"
+                                           value="14"
+                                           min="1"
+                                           max="14"
+                                           required
+                                           title="Borrow days (1-14)">
+                                    <span class="input-group-text">days</span>
+                                </div>
+
+                                <button type="submit" class="btn btn-sm btn-outline-primary borrow-btn text-nowrap">
+                                    <i class="bi bi-book me-1"></i>Borrow
                                 </button>
                             </form>
                         </div>
 
-                        <!-- GUEST USER: Borrow button redirects to /login -->
+                        <!-- GUEST USER -->
                         <div sec:authorize="isAnonymous()">
-                            <a th:href="@{/login}"
-                               class="btn btn-sm btn-outline-secondary">
-                                Login to Borrow
-                            </a>
+                            <a th:href="@{/login}" class="btn btn-sm btn-outline-secondary">Login to Borrow</a>
                         </div>
                     </td>
                 </tr>
@@ -208,5 +222,37 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function handleBorrowClick(event, form) {
+        const isAvailable = form.getAttribute('data-stock') === 'true';
+        const wrapper = form.querySelector('.days-wrapper');
+        const btn = form.querySelector('.borrow-btn');
+
+        // Out of stock: Submit immediately so backend sends email to admin & throws error message
+        if (!isAvailable) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Notifying...`;
+            return true;
+        }
+
+        // In stock: Toggle input box on first click
+        if (wrapper.classList.contains('d-none')) {
+            event.preventDefault(); // Stop immediate form submission
+            wrapper.classList.remove('d-none');
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-success');
+            btn.innerHTML = `<i class="bi bi-check-lg me-1"></i>Confirm`;
+
+            const input = wrapper.querySelector('input');
+            input.focus();
+            return false;
+        }
+
+        // Second click (Confirm): Submit form and show loading status
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Confirming...`;
+        return true;
+    }
+</script>
 </body>
 </html>

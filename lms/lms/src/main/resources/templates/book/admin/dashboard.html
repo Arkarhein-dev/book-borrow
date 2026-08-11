@@ -17,13 +17,34 @@
         <a class="navbar-brand" th:href="@{/admin/dashboard}">Library Management System - Admin Dashboard</a>
 
         <div class="d-flex align-items-center gap-2">
-            <!-- Greeting -->
-            <span class="text-light me-2" sec:authorize="isAuthenticated()">
-                Hello, <strong sec:authentication="name">Admin</strong>
-            </span>
+            <div class="dropdown" sec:authorize="isAuthenticated()">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1"
+                        type="button"
+                        id="userDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span sec:authentication="name">User</span>
+                </button>
 
-            <!-- Logout Link -->
-            <a th:href="@{/logout}" class="btn btn-danger btn-sm">Logout</a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+                    <!-- 1. Setting Dropdown Item -->
+                    <li>
+                        <a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2" th:href="@{/admin/settings}">
+                            <i class="bi bi-gear"></i> Setting
+                        </a>
+                    </li>
+
+                    <li><hr class="dropdown-divider"></li>
+
+                    <!-- 2. Logout Dropdown Item -->
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 text-danger" th:href="@{/logout}">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>

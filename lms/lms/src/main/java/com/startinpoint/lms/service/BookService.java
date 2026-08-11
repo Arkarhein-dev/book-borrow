@@ -81,10 +81,14 @@ public class BookService {
 		bookRepository.deleteById(id);
 	}
 
+
 	@Transactional
-	public void borrowBook(Long bookId, String username) {
-		Book book = bookRepository.findById(bookId).orElseThrow();
-		
+	public void borrowBook(Long bookId, String username,int borrowDays) {
+		Book book = bookRepository.findById(bookId).orElseThrow(() -> new IllegalArgumentException("Book Not found..."));
+		if(borrowDays < 1 || borrowDays >14){
+			throw new IllegalArgumentException("Borrow Durations Must be Between 1 and 14 days");
+		}
+
 		if(!book.isAvailable() || book.getStock() <=0) {
 			emailService.sendOutOfStockNotificationToAdmin(book.getTitle(),book.getId(),username);
 			throw new IllegalArgumentException("Sry, this book is out of stock.");
@@ -103,7 +107,7 @@ public class BookService {
 		borrowRecord.setBook(book);
 		borrowRecord.setUser(user);
 		borrowRecord.setBorrowDate(LocalDate.now());
-		borrowRecord.setDueDate(LocalDate.now().plusDays(14));
+		borrowRecord.setDueDate(LocalDate.now().plusDays(borrowDays));
 		borrowRecord.setStatus(BorrowStatus.BORROWED);
 		borrowRecordRepository.save(borrowRecord);
 		

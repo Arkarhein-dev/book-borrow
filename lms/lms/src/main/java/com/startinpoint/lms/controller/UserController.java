@@ -1,21 +1,16 @@
 package com.startinpoint.lms.controller;
 
-import java.util.List;
 
 import com.startinpoint.lms.dto.response.BookResponseDto;
 import com.startinpoint.lms.dto.response.BorrowRecordResponseDto;
-import com.startinpoint.lms.entity.BorrowRecord;
 import com.startinpoint.lms.entity.BorrowStatus;
-import com.startinpoint.lms.entity.User;
 import com.startinpoint.lms.service.BorrowRecordService;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import com.startinpoint.lms.entity.Book;
 import com.startinpoint.lms.service.BookService;
 
 import lombok.RequiredArgsConstructor;
@@ -121,21 +116,46 @@ public class UserController {
 	}
 
 	@PostMapping("/borrow-book/{id}")
-	public String borrowBook(@PathVariable("id")Long bookId,
-							 @RequestParam(value = "page",defaultValue = "1") int page,
-							 @RequestParam(value = "size",defaultValue = "6") int size,
-							 @RequestParam(value = "sortField",defaultValue = "title") String sortField,
-							 @RequestParam(value = "sortDir",defaultValue = "asc") String sortDir,
-							 Authentication authentication,
-							 RedirectAttributes redirectAttributes){
-		try{
+	public String borrowBook(
+			@PathVariable("id") Long bookId,
+			@RequestParam(value = "dueDate", defaultValue = "14") Integer dueDate,
+			@RequestParam(value = "page", defaultValue = "1") int page,
+			@RequestParam(value = "size", defaultValue = "6") int size,
+			@RequestParam(value = "sortField", defaultValue = "title") String sortField,
+			@RequestParam(value = "sortDir", defaultValue = "asc") String sortDir,
+			@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "availableOnly", required = false) Boolean availableOnly,
+			Authentication authentication,
+			RedirectAttributes redirectAttributes) {
+
+		try {
+			int days = (dueDate == null || dueDate < 1 || dueDate > 14) ? 14 : dueDate;
 			String username = authentication.getName();
-			bookService.borrowBook(bookId,username);
-			redirectAttributes.addFlashAttribute("successMessage","Book borrowed Successfully..");
-		}catch (Exception e){
-			redirectAttributes.addFlashAttribute("errorMessage",e.getMessage());
+
+			bookService.borrowBook(bookId, username, days);
+
+			redirectAttributes.addFlashAttribute("successMessage",
+					String.format("Book borrowed successfully for %d day(s)!", days));
+
+		} catch (IllegalArgumentException e) {
+			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("errorMessage", "An error occurred while borrowing the book.");
 		}
-		return String.format("redirect:/user/home?page=%d&size=%d&sortField=%s&sortDir=%s",page,size,sortField,sortDir);
+
+		// ALWAYS REDIRECT BACK TO /user/home PRESERVING QUERY PARAMS
+		StringBuilder redirectUrl = new StringBuilder(
+				String.format("redirect:/user/home?page=%d&size=%d&sortField=%s&sortDir=%s", page, size, sortField, sortDir)
+		);
+
+		if (keyword != null && !keyword.trim().isEmpty()) {
+			redirectUrl.append("&keyword=").append(keyword);
+		}
+		if (availableOnly != null) {
+			redirectUrl.append("&availableOnly=").append(availableOnly);
+		}
+
+		return redirectUrl.toString(); // e.g. redirect:/user/home?page=1&size=6&sortField=title&sortDir=asc
 	}
 
 	@PostMapping("/return-book/{recordId}")
