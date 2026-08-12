@@ -5,11 +5,14 @@ import com.startinpoint.lms.entity.Book;
 import com.startinpoint.lms.entity.User;
 import com.startinpoint.lms.entity.UserRole;
 import com.startinpoint.lms.repository.BookRepository;
+import com.startinpoint.lms.repository.BorrowRecordRepository;
 import com.startinpoint.lms.repository.UserRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +21,12 @@ import java.util.List;
 
 @SpringBootApplication
 @EnableAsync
-public class LmsApplication {
+public class LmsApplication extends SpringBootServletInitializer {
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(LmsApplication.class);
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(LmsApplication.class, args);

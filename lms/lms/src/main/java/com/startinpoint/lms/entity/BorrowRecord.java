@@ -37,4 +37,5 @@ public class BorrowRecord {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length=20)
 	private BorrowStatus status;
+
 }

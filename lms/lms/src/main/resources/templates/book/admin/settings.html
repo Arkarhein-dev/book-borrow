@@ -4,53 +4,68 @@
       lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Setting</title>
+    <title>Admin Settings - Library Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center gap-2 mb-4">
-        <h2 class="fw-bold">Admin Setting Page</h2>
-        <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Back to Admin Home</a>
+
+<nav class="navbar navbar-dark bg-secondary mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/admin/dashboard}">Library Admin Settings</a>
+        <a th:href="@{/admin/dashboard}" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Admin Home
+        </a>
+    </div>
+</nav>
+
+<div class="container my-5" style="max-width: 900px;">
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark">System Schedulers & Automations</h2>
+        <p class="text-muted">Configure automated background tasks for system logging and email notifications.</p>
     </div>
 
     <!-- Flash Messages -->
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
         <span th:text="${successMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3">
-            <h5 class="card-title mb-0">
-                <i class="bi bi-clock-history me-2 text-primary"></i>Daily Console Job Scheduler
-            </h5>
+    <div class="row g-4">
+        <!-- Console Scheduler Card -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
+                            <i class="bi bi-terminal-fill fs-3"></i>
+                        </div>
+                        <h5 class="card-title fw-bold mb-0">Console Log Scheduler</h5>
+                    </div>
+                    <p class="card-text text-muted flex-grow-1">Manage interval settings for routine system diagnostic logging.</p>
+                    <a th:href="@{/admin/settings/show-console-scheduler-page}" class="btn btn-outline-primary fw-semibold w-100">
+                        Configure Console Scheduler
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
-            <form th:action="@{/admin/settings/scheduler}"
-                  method="post"
-                  class="row align-items-end g-3">
-                <div class="col-md-4">
-                    <label for="executionTime" class="form-label fw-bold">Execution Time</label>
-                    <input type="time"
-                           id="executionTime"
-                           name="time"
-                           th:value="${scheduleTime}"
-                           class="form-control"
-                           required>
+        <!-- Overdue Alert Scheduler Card -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3 me-3">
+                            <i class="bi bi-alarm-fill fs-3"></i>
+                        </div>
+                        <h5 class="card-title fw-bold mb-0">Borrow Overdue Alerts</h5>
+                    </div>
+                    <p class="card-text text-muted flex-grow-1">Set up automated email alerts to notify patrons with overdue books.</p>
+                    <a th:href="@{/admin/settings/show-borrow-overdue-scheduler-page}" class="btn btn-primary fw-semibold w-100">
+                        Configure Overdue Scheduler
+                    </a>
                 </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-1"></i> Save Schedule Time
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
