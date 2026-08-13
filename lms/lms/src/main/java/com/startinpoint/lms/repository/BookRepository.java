@@ -20,7 +20,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // 2. Available books WITH keyword
     @Query("""
-        SELECT b FROM Book b 
+        SELECT b FROM Book b
         WHERE b.stock > 0 
         AND (
             LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 

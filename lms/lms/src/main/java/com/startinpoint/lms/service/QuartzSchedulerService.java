@@ -99,5 +99,4 @@ public class QuartzSchedulerService {
         log.info("Manually trigger quartz Job '{}'",JOB_KEY);
     }
 
-    public void get
 }

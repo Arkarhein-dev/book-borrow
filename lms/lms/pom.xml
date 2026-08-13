@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.startinpoint</groupId>
 	<artifactId>lms</artifactId>
@@ -48,6 +48,7 @@
 <!--		<dependency>-->
 <!--			<groupId>jakarta.servlet</groupId>-->
 <!--			<artifactId>jakarta.servlet-api</artifactId>-->
+<!--			<version>6.0.0</version>-->
 <!--			<scope>provided</scope>-->
 <!--		</dependency>-->
 

@@ -99,7 +99,7 @@ public class AdminSettingController {
     public String showAdminEmailAlertPage(
             Model model
     ){
-        AdminStockOutEmailAlertDto stockOutEmailAlertDto = quartzSchedulerService.
+//        AdminStockOutEmailAlertDto stockOutEmailAlertDto = quartzSchedulerService.
 
         return "/book/admin/set-admin-email-alert-page";
     }

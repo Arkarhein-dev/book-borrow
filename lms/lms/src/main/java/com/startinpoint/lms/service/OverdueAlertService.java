@@ -13,8 +13,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OverSchedulerService {
-    private static final Logger log = LoggerFactory.getLogger(OverSchedulerService.class);
+public class OverdueAlertService {
+    private static final Logger log = LoggerFactory.getLogger(OverdueAlertService.class);
     private final BorrowRecordRepository borrowRecordRepository;
     private final EmailService emailService;
 
