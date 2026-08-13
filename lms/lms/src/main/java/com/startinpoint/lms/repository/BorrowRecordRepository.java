@@ -115,7 +115,7 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     set br.status = com.startinpoint.lms.entity.BorrowStatus.OVERDUE
     where br.status = com.startinpoint.lms.entity.BorrowStatus.BORROWED
     and br.returnedDate is null
-    and br.dueDate < CURRENT_DATE 
+    and br.dueDate < CURRENT_DATE
 """)
     int updateOverdueStatusesOnStartUp();
 }

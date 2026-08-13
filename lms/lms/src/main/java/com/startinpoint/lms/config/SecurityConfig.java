@@ -27,7 +27,7 @@ public class SecurityConfig {
         http
                 .csrf(c -> c.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/user/home", "/show-register", "/register", "/login", "/books/**").permitAll()
+                        .requestMatchers("/", "/user/home", "/register", "/login", "/books/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
@@ -40,7 +40,6 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        // INDUSTRIAL FIX: Use the configured handler instead of a raw relative string
                         .logoutSuccessUrl("/user/home?logout")
                         .permitAll()
                 );

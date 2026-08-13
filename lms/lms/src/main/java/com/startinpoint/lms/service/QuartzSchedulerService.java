@@ -98,4 +98,6 @@ public class QuartzSchedulerService {
         scheduler.triggerJob(jobKey);
         log.info("Manually trigger quartz Job '{}'",JOB_KEY);
     }
+
+    public void get
 }

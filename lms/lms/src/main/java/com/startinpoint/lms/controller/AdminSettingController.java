@@ -1,5 +1,6 @@
 package com.startinpoint.lms.controller;
 
+import com.startinpoint.lms.dto.AdminStockOutEmailAlertDto;
 import com.startinpoint.lms.dto.SchedulerConfigDto;
 import com.startinpoint.lms.service.DynamicSchedulerService;
 import com.startinpoint.lms.service.QuartzSchedulerService;
@@ -92,6 +93,15 @@ public class AdminSettingController {
                     "Failed to Schedule Job: " + e.getMessage());
         }
         return "redirect:/admin/settings";
+    }
+
+    @GetMapping("/admin-email-alert-page")
+    public String showAdminEmailAlertPage(
+            Model model
+    ){
+        AdminStockOutEmailAlertDto stockOutEmailAlertDto = quartzSchedulerService.
+
+        return "/book/admin/set-admin-email-alert-page";
     }
 
     // Helper method to convert Quartz cron expression "0 mm HH * * ?" into "HH:mm"
