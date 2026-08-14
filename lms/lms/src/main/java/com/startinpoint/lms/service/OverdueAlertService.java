@@ -7,9 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.filter.RequestContextFilter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,20 +28,28 @@ public class OverdueAlertService {
         List<BorrowRecord> overdueRecords = borrowRecordRepository.findOverdueUnreturnedBooks(today);
 
         log.info("Starting Overdue check... Found {} overdue records",overdueRecords.size());
-        int emailSents = 0;
+        if(overdueRecords.isEmpty()){
+            log.info("No overdue Record Record Found Today...");
+            return;
+        }
+        int emailSent = 0;
+        Map<String, List<BorrowRecord>> overdueRecordsByUsers = overdueRecords.stream()
+                .filter(record ->record.getUser() != null && record.getUser().getEmail() != null)
+                .collect(Collectors.groupingBy(record -> record.getUser().getEmail()));
 
-        for(BorrowRecord record : overdueRecords){
-            try{
-                String recipientEmail = record.getUser().getEmail();
-                String bookTitle = record.getBook().getTitle();
-                LocalDate dueDate = record.getDueDate();
+        for(Map.Entry<String,List<BorrowRecord>> entry : overdueRecordsByUsers.entrySet() ){
+            String userEmail = entry.getKey();
+            List<BorrowRecord> userBooks = entry.getValue();
 
-                emailService.sendOverdueNotice(recipientEmail, bookTitle, dueDate);
-                emailSents++;
+            try {
+                emailService.sendOverdueNotice(userEmail,userBooks);
+                emailSent++;
             }catch (Exception e){
-                log.error("Failed to send overdue email for record ID {}",record.getId());
+                log.error("Failed to send overdue email to user {}",userEmail,e);
             }
         }
-        log.info("Over Due Check Completed. Successfully Sent emails {}",emailSents);
+
+        log.info("Overdue Check Completed. Sent {} total emails to overdue users.",emailSent);
+
     }
 }

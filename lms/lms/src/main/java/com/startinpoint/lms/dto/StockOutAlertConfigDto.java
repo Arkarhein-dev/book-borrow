@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminStockOutEmailAlertDto {
-
+public class StockOutAlertConfigDto {
     private String adminEmail;
-    private String triggerTime;
+    private int intervalValue;
+    private String  timeUnit;
+    private boolean enabled;
 }

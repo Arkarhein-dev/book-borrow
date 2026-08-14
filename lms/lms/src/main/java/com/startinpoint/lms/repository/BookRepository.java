@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import com.startinpoint.lms.entity.Book;
 
+import java.util.List;
+
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 	Page<Book> findByAvailableTrue(Pageable pageable);
@@ -36,4 +38,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%'))
     """)
     Page<Book> searchBookWithKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    List<Book> findByStockEquals(int stock);
 }

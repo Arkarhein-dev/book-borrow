@@ -65,7 +65,7 @@ public class QuartzSchedulerService {
             }
             return new SchedulerConfigDto(isEnabled,cronExpression);
         }catch (Exception e){
-            log.error("Error Retriving Quartz  Job configuration ",e);
+            log.error("Error Retrieving Quartz  Job configuration ",e);
             return new SchedulerConfigDto(false,DEFAULT_CRON);
         }
     }

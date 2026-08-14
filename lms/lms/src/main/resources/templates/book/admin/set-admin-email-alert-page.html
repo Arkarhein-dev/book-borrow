@@ -5,50 +5,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Library Management System</title>
+    <title>Stock Out Alert Settings - Library Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container my-5">
+<body class="bg-light">
+<div class="container my-5" style="max-width: 600px;">
 
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white py-3 mb-4">
-                <h4 class="fw-bold mb-2">
-                    <i class="bi bi-clock-history me-2"></i>Admin Email Alert Page
-                </h4>
-            </div>
-            <div class="card-body py-0">
-                <form th:action="@{/admin/settings}" method="post">
-                    <div class="mb-3">
-                        <label class="form-label fw-semi-bold ">Admin Notification Email</label>
-                        <input type="email"
-                                name="adminEmail"
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-danger text-white py-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>Book Out of Stock Alert
+            </h5>
+        </div>
+        <div class="card-body p-4">
+
+            <!-- Form 1: Toggle Alert Status Only -->
+            <form th:action="@{/admin/settings/toggle-stock-out-alert}" method="post" class="card p-3 mb-4 bg-body-tertiary border-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="fw-semibold d-block">Automatic Alert Status</span>
+                        <small class="text-muted">
+                            Alerts are currently
+                            <span th:if="${config.enabled}" class="text-primary fw-bold" >ACTIVE</span>
+                            <span th:unless="${config.enabled}" class="text-danger fw-bold" >PAUSED</span>
+                        </small>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input type="checkbox"
+                               class="form-check-input fs-5"
+                               name="enabled"
+                               value="true"
+                               id="enableSwitch"
+                               th:checked="${config.enabled}"
+                               onchange="this.form.submit()">
+                    </div>
+                </div>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Form 2: Configure Schedule & Email Settings -->
+            <form th:action="@{/admin/settings/admin-stock-out-alert}" th:object="${config}" method="post">
+                <!-- Keep enabled status intact when updating schedule -->
+                <input type="hidden" th:field="*{enabled}" />
+
+                <h6 class="fw-bold text-secondary mb-3">Schedule Configuration</h6>
+
+                <!-- Admin Email Input -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Admin Notification Email</label>
+                    <input type="email"
+                           class="form-control"
+                           th:field="*{adminEmail}"
+                           placeholder="admin@gmail.com"
+                           required>
+                </div>
+
+                <!-- Interval Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-8">
+                        <label class="form-label fw-semibold">Trigger Interval</label>
+                        <input type="number"
                                class="form-control"
-                               required
-                               placeholder="admin@gmail.com"
-                        >
-                        <div class="invalid-feedback"></div>
+                               th:field="*{intervalValue}"
+                               min="1"
+                               required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semi-bold ">Trigger Time</label>
-                        <input type="time"
-                            name="triggerTime"
-                               class="form-control"
-                               required
-                        >
-                        <div class="invalid-feedback"></div>
+                    <div class="col-4">
+                        <label class="form-label fw-semibold">Unit</label>
+                        <select th:field="*{timeUnit}" class="form-select">
+                            <option value="MINUTES">minute(s)</option>
+                            <option value="HOURS">hour(s)</option>
+                        </select>
                     </div>
-                    <div class="d-grid my-3">
-                        <button class="btn btn-primary btn-lg fs-6 fw-semibold">
-                            <i class="bi bi-save me-1"></i>Save Schedule
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-save me-1"></i>Save Schedule Configuration
+                    </button>
+                    <a th:href="@{/admin/settings}" class="btn btn-outline-secondary fw-semibold">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </a>
+                </div>
+
+            </form>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,17 +1,15 @@
 package com.startinpoint.lms.controller;
 
-import com.startinpoint.lms.dto.AdminStockOutEmailAlertDto;
 import com.startinpoint.lms.dto.SchedulerConfigDto;
+import com.startinpoint.lms.dto.StockOutAlertConfigDto;
 import com.startinpoint.lms.service.DynamicSchedulerService;
 import com.startinpoint.lms.service.QuartzSchedulerService;
+import com.startinpoint.lms.service.StockOutEmailTriggerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalTime;
@@ -23,6 +21,7 @@ public class AdminSettingController {
 
     private final DynamicSchedulerService dynamicSchedulerService;
     private final QuartzSchedulerService quartzSchedulerService;
+    private final StockOutEmailTriggerService stockOutEmailTriggerService;
 
     @GetMapping
     public String showSettingsPage(Model model){
@@ -99,9 +98,37 @@ public class AdminSettingController {
     public String showAdminEmailAlertPage(
             Model model
     ){
-//        AdminStockOutEmailAlertDto stockOutEmailAlertDto = quartzSchedulerService.
+        StockOutAlertConfigDto config = stockOutEmailTriggerService.getCurrentConfig();
+        model.addAttribute("config",config);
 
         return "/book/admin/set-admin-email-alert-page";
+    }
+
+    @PostMapping("/admin-stock-out-alert")
+    public String adminStockOutAlert(
+            @ModelAttribute("config") StockOutAlertConfigDto config,
+            RedirectAttributes redirectAttributes
+    ){
+        try{
+            stockOutEmailTriggerService.updateStockOutSchedule(config);
+            redirectAttributes.addFlashAttribute("successMessage","Stock Out email sent Succesfully.");
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute("errorMessage","Failed to sent stock out email alert to admin...");
+        }
+        return "redirect:/admin/settings";
+    }
+
+    @PostMapping("/toggle-stock-out-alert")
+    public String toggleStockOutAlert(
+            @RequestParam(value = "enabled",defaultValue = "false")Boolean enabled
+    ){
+        try{
+            stockOutEmailTriggerService.toggleAlertTrigger(enabled);
+            String status = enabled ? "activated" : "paused";
+        }catch (Exception e){
+            System.err.print("Error while toggling stock out alert");
+        }
+        return "redirect:/admin/settings/admin-email-alert-page";
     }
 
     // Helper method to convert Quartz cron expression "0 mm HH * * ?" into "HH:mm"
